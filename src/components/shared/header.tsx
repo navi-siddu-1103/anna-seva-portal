@@ -26,6 +26,7 @@ export default function Header() {
   const userRole = isDistributor ? 'PDS Distributor' : 'Ration Card Holder';
   
   const role = useMemo(() => pathname.startsWith('/distributor') ? 'distributor' : 'user', [pathname]);
+  const profileLink = isDistributor ? '/distributor/profile' : '/profile';
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
@@ -79,7 +80,7 @@ export default function Header() {
               <div className="text-xs text-muted-foreground">{userRole}</div>
             </DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <Link href="/profile">
+            <Link href={profileLink}>
               <DropdownMenuItem>
                 <User className="mr-2 h-4 w-4" />
                 <span>Profile</span>

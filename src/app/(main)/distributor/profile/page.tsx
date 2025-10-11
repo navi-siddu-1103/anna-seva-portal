@@ -8,17 +8,17 @@ import { Separator } from '@/components/ui/separator';
 import { User, Fingerprint, MapPin, Store, Phone, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-export default function ProfilePage() {
+export default function DistributorProfilePage() {
     const router = useRouter();
   
-    const userData = {
-      name: 'Card Holder',
-      rationCardNumber: 'KA-345-2345678',
-      address: '123, 4th Main, 5th Cross, Jayanagar, Bangalore, Karnataka - 560041',
-      fps: 'Annapurna Fair Price Shop',
-      mobile: '+91 98765 43210'
+    const distributorData = {
+      name: 'Distributor',
+      shopName: 'Annapurna Fair Price Shop',
+      shopId: 'FPS-101-KA',
+      address: '456, Market Road, Shivajinagar, Bangalore, Karnataka - 560001',
+      mobile: '+91 87654 32109'
     };
-  
+
     return (
         <div className="container mx-auto p-4 md:p-8">
             <div className="flex items-center gap-4 mb-8">
@@ -35,18 +35,18 @@ export default function ProfilePage() {
                              <AvatarFallback className="h-full w-full"><User size={40}/></AvatarFallback>
                         </Avatar>
                         <div>
-                            <CardTitle className="text-3xl">{userData.name}</CardTitle>
-                            <CardDescription>Ration Card Holder</CardDescription>
+                            <CardTitle className="text-3xl">{distributorData.name}</CardTitle>
+                            <CardDescription>PDS Distributor</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Separator />
                     <div className="space-y-3">
-                        <InfoItem icon={Fingerprint} label="Ration Card Number" value={userData.rationCardNumber} />
-                        <InfoItem icon={MapPin} label="Address" value={userData.address} />
-                        <InfoItem icon={Phone} label="Mobile Number" value={userData.mobile} />
-                        <InfoItem icon={Store} label="Linked Fair Price Shop" value={userData.fps} />
+                        <InfoItem icon={Store} label="Shop Name" value={distributorData.shopName} />
+                        <InfoItem icon={Fingerprint} label="Shop ID" value={distributorData.shopId} />
+                        <InfoItem icon={MapPin} label="Address" value={distributorData.address} />
+                        <InfoItem icon={Phone} label="Mobile Number" value={distributorData.mobile} />
                     </div>
                 </CardContent>
             </Card>

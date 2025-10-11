@@ -32,7 +32,7 @@ const distributorNavItems: NavItem[] = [
   { href: '/distributor/stock', label: 'Stock Mgmt', icon: Box, tooltip: 'Stock Management' },
   { href: '/distributor/orders', label: 'Fulfilled Orders', icon: ClipboardList, tooltip: 'Fulfilled Orders' },
   { href: '/distributor/slots', label: 'Distribution Slots', icon: Clock, tooltip: 'Distribution Slots' },
-  { href: '/profile', label: 'Profile', icon: User, tooltip: 'Distributor Profile' },
+  { href: '/distributor/profile', label: 'Profile', icon: User, tooltip: 'Distributor Profile' },
 ];
 
 export default function SidebarNav({ role }: { role: 'user' | 'distributor' }) {
