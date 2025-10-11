@@ -15,16 +15,25 @@ import {
 import Header from '@/components/shared/header';
 import SidebarNav from '@/components/shared/sidebar-nav';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
-import { useMemo } from 'react';
+import { useMemo, useEffect, useState } from 'react';
 
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const role = useMemo(() => pathname.startsWith('/distributor') ? 'distributor' : 'user', [pathname]);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   const isDistributor = role === 'distributor';
   const avatarId = isDistributor ? 'distributor-avatar-1' : 'user-avatar-1';
   const avatar = PlaceHolderImages.find((img) => img.id === avatarId);
   const userName = isDistributor ? 'Distributor' : 'Card Holder';
+
+  if (!isMounted) {
+    return null; 
+  }
 
   return (
     <SidebarProvider>
@@ -53,7 +62,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </Sidebar>
       <SidebarInset>
         <Header />
-        <main className="flex-1 p-4 sm:px-6 sm:py-0">{children}</main>
+        <main className="flex-1 overflow-auto p-4 sm:px-6 sm:py-0">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );

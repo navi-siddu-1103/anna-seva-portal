@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { Wheat } from 'lucide-react';
 import Link from 'next/link';
+import { WheatIcon } from '@/components/icons';
 
 export default function SplashPage() {
   return (
@@ -8,7 +8,7 @@ export default function SplashPage() {
       <div className="flex flex-col items-center text-center p-8">
         <div className="p-4 bg-primary/20 rounded-full mb-6">
           <div className="p-3 bg-primary/40 rounded-full">
-            <Wheat className="w-16 h-16 text-primary" />
+            <WheatIcon className="w-16 h-16 text-primary" />
           </div>
         </div>
         <h1 className="font-headline text-5xl md:text-7xl font-bold text-primary mb-2">
