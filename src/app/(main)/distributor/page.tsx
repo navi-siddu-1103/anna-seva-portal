@@ -1,17 +1,27 @@
+
+"use client";
+
+import React from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Box, ClipboardList, Clock, AlertTriangle } from "lucide-react"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
 
-const chartData = [
+const generateChartData = () => [
   { name: "Rice", total: Math.floor(Math.random() * 500) + 100 },
   { name: "Wheat", total: Math.floor(Math.random() * 500) + 100 },
   { name: "Sugar", total: Math.floor(Math.random() * 500) + 100 },
   { name: "Dal", total: Math.floor(Math.random() * 500) + 100 },
   { name: "Oil", total: Math.floor(Math.random() * 500) + 100 },
-]
+];
 
 export default function DistributorDashboard() {
+  const [chartData, setChartData] = React.useState<{name: string, total: number}[]>([]);
+
+  React.useEffect(() => {
+    setChartData(generateChartData());
+  }, []);
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
