@@ -2,7 +2,7 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
-import { WheatIcon } from '@/components/icons';
+import { Wheat } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Sidebar,
@@ -10,7 +10,6 @@ import {
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
-  SidebarInset,
 } from '@/components/ui/sidebar';
 import Header from '@/components/shared/header';
 import SidebarNav from '@/components/shared/sidebar-nav';
@@ -26,23 +25,21 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     setIsMounted(true);
   }, []);
 
+  if (!isMounted) {
+    return <div className="min-h-screen w-full" />;
+  }
+  
   const isDistributor = role === 'distributor';
   const avatarId = isDistributor ? 'distributor-avatar-1' : 'user-avatar-1';
   const avatar = PlaceHolderImages.find((img) => img.id === avatarId);
   const userName = isDistributor ? 'Distributor' : 'Card Holder';
-
-  if (!isMounted) {
-    return (
-        <div className="min-h-screen w-full" />
-    );
-  }
 
   return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="border-b">
           <Link href="/" className="flex items-center gap-2 font-semibold">
-            <WheatIcon className="h-8 w-8 text-primary" />
+            <Wheat className="h-8 w-8 text-primary" />
             <span className="font-headline text-xl">Anna Seva Portal</span>
           </Link>
         </SidebarHeader>
@@ -62,10 +59,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             </div>
         </SidebarFooter>
       </Sidebar>
-      <SidebarInset>
+      <div className="flex flex-col flex-1">
         <Header />
         <main className="flex-1 overflow-auto">{children}</main>
-      </SidebarInset>
+      </div>
     </SidebarProvider>
   );
 }
