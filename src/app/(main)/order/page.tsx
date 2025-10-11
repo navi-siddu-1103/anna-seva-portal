@@ -1,3 +1,4 @@
+
 'use client';
 
 import { useState } from 'react';
@@ -90,8 +91,8 @@ export default function OrderPage() {
                       </div>
                       <div className="flex-grow">
                         <p className="font-semibold">{product.name}</p>
-                        <p className="text-sm text-muted-foreground">
-                          {quantity} x ₹{product.price.toFixed(2)}
+                        <p className="text-sm text-muted-foreground flex items-center">
+                          {quantity} x <IndianRupee className="inline-block h-4 w-4" />{product.price.toFixed(2)}
                         </p>
                       </div>
                       <div className="flex items-center gap-2">
@@ -103,9 +104,9 @@ export default function OrderPage() {
                     </div>
                   ))}
                   <Separator />
-                  <div className="flex justify-between font-bold text-lg">
+                  <div className="flex justify-between font-bold text-lg items-center">
                     <span>Total</span>
-                    <span>₹{totalPrice.toFixed(2)}</span>
+                    <span className="flex items-center"><IndianRupee className="inline-block h-5 w-5" />{totalPrice.toFixed(2)}</span>
                   </div>
                 </div>
               )}
@@ -120,8 +121,8 @@ export default function OrderPage() {
                   <AlertDialogContent>
                     <AlertDialogHeader>
                       <AlertDialogTitle>Simulated UPI Payment</AlertDialogTitle>
-                      <AlertDialogDescription>
-                        You are about to pay ₹{totalPrice.toFixed(2)}. This is a simulation. No real payment will be processed.
+                      <AlertDialogDescription className="flex items-center">
+                        You are about to pay <IndianRupee className="inline-block h-4 w-4 mx-1" />{totalPrice.toFixed(2)}. This is a simulation. No real payment will be processed.
                       </AlertDialogDescription>
                     </AlertDialogHeader>
                      <div className="flex flex-col items-center justify-center p-6 space-y-4">
@@ -155,7 +156,7 @@ export default function OrderPage() {
               <CardDescription>{product.entitlement}</CardDescription>
             </CardHeader>
             <CardContent className="flex-grow">
-              <p className="text-2xl font-bold text-primary">₹{product.price.toFixed(2)} <span className="text-sm font-normal text-muted-foreground">/ {product.unit}</span></p>
+              <p className="text-2xl font-bold text-primary flex items-center"><IndianRupee className="inline-block h-6 w-6 mr-1" />{product.price.toFixed(2)} <span className="text-sm font-normal text-muted-foreground ml-1">/ {product.unit}</span></p>
               <p className="text-sm text-muted-foreground">Stock: {product.stock} {product.unit} available</p>
             </CardContent>
             <CardFooter>
