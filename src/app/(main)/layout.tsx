@@ -26,7 +26,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }, []);
 
   if (!isMounted) {
-    return <div className="min-h-screen w-full" />;
+    // Return a placeholder or null on the server to prevent hydration mismatch
+    return null;
   }
   
   const isDistributor = role === 'distributor';
@@ -49,7 +50,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <SidebarFooter className="border-t">
             <div className="flex items-center gap-3 p-2">
               <Avatar>
-                <AvatarImage src={avatar?.imageUrl} data-ai-hint={avatar?.imageHint} />
+                <AvatarImage src={avatar?.imageUrl} alt={userName} data-ai-hint={avatar?.imageHint} />
                 <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
               </Avatar>
               <div>
@@ -61,7 +62,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </Sidebar>
       <div className="flex flex-col flex-1">
         <Header />
-        <main className="flex-1 overflow-auto">{children}</main>
+        <main className="flex-1 overflow-y-auto">{children}</main>
       </div>
     </SidebarProvider>
   );
