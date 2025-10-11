@@ -1,16 +1,18 @@
 
 "use client";
 
-import { usePathname } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Separator } from '@/components/ui/separator';
-import { User, Fingerprint, MapPin, Store, Phone } from 'lucide-react';
+import { User, Fingerprint, MapPin, Store, Phone, ArrowLeft } from 'lucide-react';
+import { Button } from '@/components/ui/button';
 
 export default function ProfilePage() {
     const pathname = usePathname();
+    const router = useRouter();
     const role = useMemo(() => pathname.startsWith('/distributor') ? 'distributor' : 'user', [pathname]);
     const isDistributor = role === 'distributor';
   
@@ -39,7 +41,13 @@ export default function ProfilePage() {
 
     return (
         <div className="container mx-auto p-4 md:p-8">
-            <h1 className="text-3xl font-bold font-headline mb-8">Your Profile</h1>
+            <div className="flex items-center gap-4 mb-8">
+                 <Button variant="outline" size="icon" onClick={() => router.back()}>
+                    <ArrowLeft className="h-4 w-4" />
+                    <span className="sr-only">Back</span>
+                </Button>
+                <h1 className="text-3xl font-bold font-headline">Your Profile</h1>
+            </div>
             <Card className="max-w-2xl mx-auto">
                 <CardHeader>
                     <div className="flex items-center gap-4">
