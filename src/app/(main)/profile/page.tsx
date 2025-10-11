@@ -3,9 +3,8 @@
 
 import { usePathname, useRouter } from 'next/navigation';
 import { useMemo } from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
 import { User, Fingerprint, MapPin, Store, Phone, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -15,9 +14,6 @@ export default function ProfilePage() {
     const router = useRouter();
     const role = useMemo(() => pathname.startsWith('/distributor') ? 'distributor' : 'user', [pathname]);
     const isDistributor = role === 'distributor';
-  
-    const avatarId = isDistributor ? 'distributor-avatar-1' : 'user-avatar-1';
-    const avatar = PlaceHolderImages.find((img) => img.id === avatarId);
   
     const userData = {
       name: 'Card Holder',
@@ -52,8 +48,7 @@ export default function ProfilePage() {
                 <CardHeader>
                     <div className="flex items-center gap-4">
                         <Avatar className="h-20 w-20">
-                             <AvatarImage src={avatar?.imageUrl} alt={userName} data-ai-hint={avatar?.imageHint}/>
-                             <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+                             <AvatarFallback className="h-full w-full"><User size={40}/></AvatarFallback>
                         </Avatar>
                         <div>
                             <CardTitle className="text-3xl">{userName}</CardTitle>

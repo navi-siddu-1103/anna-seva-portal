@@ -9,12 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Globe, LogOut, User, ChevronDown, Menu } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import SidebarNav from './sidebar-nav';
 import { WheatIcon } from '../icons';
@@ -23,8 +22,6 @@ import { useMemo } from 'react';
 export default function Header() {
   const pathname = usePathname();
   const isDistributor = pathname.startsWith('/distributor');
-  const avatarId = isDistributor ? 'distributor-avatar-1' : 'user-avatar-1';
-  const avatar = PlaceHolderImages.find((img) => img.id === avatarId);
   const userName = isDistributor ? 'Distributor' : 'Card Holder';
   const userRole = isDistributor ? 'PDS Distributor' : 'Ration Card Holder';
   
@@ -72,8 +69,7 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="secondary" className="relative h-8 w-8 rounded-full">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={avatar?.imageUrl} alt={userName} data-ai-hint={avatar?.imageHint}/>
-                <AvatarFallback>{userName.charAt(0)}</AvatarFallback>
+                 <AvatarFallback><User /></AvatarFallback>
               </Avatar>
             </Button>
           </DropdownMenuTrigger>

@@ -5,48 +5,6 @@
       "description": "A map showing locations of Fair Price Shops.",
       "imageUrl": "https://picsum.photos/seed/map1/1200/800",
       "imageHint": "map city"
-    },
-    {
-      "id": "rice-bag",
-      "description": "A sack of rice.",
-      "imageUrl": "https://picsum.photos/seed/rice1/400/300",
-      "imageHint": "rice bag"
-    },
-    {
-      "id": "wheat-flour",
-      "description": "A bag of wheat flour.",
-      "imageUrl": "https://picsum.photos/seed/wheat1/400/300",
-      "imageHint": "flour bag"
-    },
-    {
-      "id": "sugar-pack",
-      "description": "A packet of sugar.",
-      "imageUrl": "https://picsum.photos/seed/sugar1/400/300",
-      "imageHint": "sugar packet"
-    },
-    {
-      "id": "dal-lentils",
-      "description": "A bowl of lentils (dal).",
-      "imageUrl": "https://picsum.photos/seed/dal1/400/300",
-      "imageHint": "lentils bowl"
-    },
-    {
-      "id": "cooking-oil",
-      "description": "A bottle of cooking oil.",
-      "imageUrl": "https://picsum.photos/seed/oil1/400/300",
-      "imageHint": "cooking oil"
-    },
-    {
-      "id": "user-avatar-1",
-      "description": "Avatar for a user.",
-      "imageUrl": "https://picsum.photos/seed/woman-portrait/100/100",
-      "imageHint": "woman portrait"
-    },
-    {
-      "id": "distributor-avatar-1",
-      "description": "Avatar for a distributor.",
-      "imageUrl": "https://picsum.photos/seed/avatar2/100/100",
-      "imageHint": "man portrait"
     }
   ]
 }

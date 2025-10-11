@@ -1,13 +1,4 @@
-import { PlaceHolderImages } from '@/lib/placeholder-images';
 import type { Product, FPS, Complaint } from '@/lib/types';
-
-const findImage = (id: string) => {
-  const image = PlaceHolderImages.find(img => img.id === id);
-  return {
-    imageUrl: image?.imageUrl || '',
-    imageHint: image?.imageHint || '',
-  };
-};
 
 export const products: Product[] = [
   {
@@ -17,7 +8,6 @@ export const products: Product[] = [
     unit: 'kg',
     entitlement: '5 kg per person',
     stock: 250,
-    ...findImage('rice-bag'),
   },
   {
     id: '2',
@@ -26,7 +16,6 @@ export const products: Product[] = [
     unit: 'kg',
     entitlement: '5 kg per person',
     stock: 400,
-    ...findImage('wheat-flour'),
   },
   {
     id: '3',
@@ -35,7 +24,6 @@ export const products: Product[] = [
     unit: 'kg',
     entitlement: '1 kg per family',
     stock: 150,
-    ...findImage('sugar-pack'),
   },
   {
     id: '4',
@@ -44,7 +32,6 @@ export const products: Product[] = [
     unit: 'kg',
     entitlement: '1 kg per family',
     stock: 100,
-    ...findImage('dal-lentils'),
   },
   {
     id: '5',
@@ -53,7 +40,6 @@ export const products: Product[] = [
     unit: 'litre',
     entitlement: '1 litre per family',
     stock: 80,
-    ...findImage('cooking-oil'),
   },
 ];
 

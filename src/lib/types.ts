@@ -9,8 +9,6 @@ export type Product = {
   unit: string;
   entitlement: string;
   stock: number;
-  imageUrl: string;
-  imageHint: string;
 };
 
 export type FPS = {

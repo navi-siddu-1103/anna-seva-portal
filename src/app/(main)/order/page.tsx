@@ -2,11 +2,12 @@
 
 import { useState } from 'react';
 import Image from 'next/image';
-import { products as allProducts, Product } from '@/lib/data';
+import { products as allProducts } from '@/lib/data';
+import type { Product } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
-import { ShoppingCart, Minus, Plus, Trash2, IndianRupee } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Trash2, IndianRupee, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import {
@@ -84,7 +85,9 @@ export default function OrderPage() {
                 <div className="space-y-4">
                   {cart.map(({ product, quantity }) => (
                     <div key={product.id} className="flex items-center gap-4">
-                      <Image src={product.imageUrl} alt={product.name} width={64} height={64} className="rounded-md" data-ai-hint={product.imageHint} />
+                      <div className="flex h-16 w-16 items-center justify-center rounded-md border bg-muted">
+                        <Package size={32} className="text-muted-foreground" />
+                      </div>
                       <div className="flex-grow">
                         <p className="font-semibold">{product.name}</p>
                         <p className="text-sm text-muted-foreground">
@@ -145,8 +148,8 @@ export default function OrderPage() {
         {allProducts.map((product) => (
           <Card key={product.id} className="flex flex-col">
             <CardHeader>
-              <div className="aspect-[4/3] relative mb-4">
-                 <Image src={product.imageUrl} alt={product.name} layout="fill" objectFit="cover" className="rounded-t-lg" data-ai-hint={product.imageHint} />
+              <div className="aspect-[4/3] relative mb-4 flex items-center justify-center bg-muted rounded-t-lg">
+                 <Package size={64} className="text-muted-foreground" />
               </div>
               <CardTitle>{product.name}</CardTitle>
               <CardDescription>{product.entitlement}</CardDescription>
