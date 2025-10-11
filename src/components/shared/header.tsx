@@ -42,7 +42,7 @@ export default function Header() {
             <div className="flex h-16 items-center border-b px-4">
               <Link href="/" className="flex items-center gap-2 font-semibold">
                 <WheatIcon className="h-6 w-6 text-primary" />
-                <span className="font-headline text-lg">e-Ration Suvidha</span>
+                <span className="font-headline text-lg">Anna Seva Portal</span>
               </Link>
             </div>
             <div className="flex-1 overflow-y-auto">

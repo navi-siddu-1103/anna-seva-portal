@@ -24,7 +24,7 @@ export default function LoginPage() {
           <div className="flex justify-center mb-4">
             <WheatIcon className="w-12 h-12 text-primary" />
           </div>
-          <CardTitle className="font-headline text-3xl">e-Ration Suvidha</CardTitle>
+          <CardTitle className="font-headline text-3xl">Anna Seva Portal</CardTitle>
           <CardDescription>
             Securely access your PDS account. Please select your role to continue.
           </CardDescription>

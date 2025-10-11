@@ -3,7 +3,7 @@ import { Toaster } from "@/components/ui/toaster"
 import './globals.css';
 
 export const metadata: Metadata = {
-  title: 'e-Ration Suvidha',
+  title: 'Anna Seva Portal',
   description: 'A digital platform for the Public Distribution System.',
 };
 

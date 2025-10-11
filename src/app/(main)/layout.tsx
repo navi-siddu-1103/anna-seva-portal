@@ -32,7 +32,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <SidebarHeader className="border-b">
           <Link href="/" className="flex items-center gap-2 font-semibold">
             <WheatIcon className="h-8 w-8 text-primary" />
-            <span className="font-headline text-xl">e-Ration Suvidha</span>
+            <span className="font-headline text-xl">Anna Seva Portal</span>
           </Link>
         </SidebarHeader>
         <SidebarContent>

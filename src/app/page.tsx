@@ -24,7 +24,7 @@ export default function SplashPage() {
         </Link>
       </div>
       <footer className="absolute bottom-4 text-sm text-muted-foreground">
-        e-Ration Suvidha | A Digital India Initiative
+        Anna Seva Portal | A Digital India Initiative
       </footer>
     </div>
   );
