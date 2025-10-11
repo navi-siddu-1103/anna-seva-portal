@@ -1,3 +1,4 @@
+
 'use client';
 
 import { usePathname } from 'next/navigation';
@@ -12,6 +13,7 @@ import {
   Box,
   ClipboardList,
   Clock,
+  User,
 } from 'lucide-react';
 import type { NavItem } from '@/lib/types';
 import { buttonVariants } from '../ui/button';
@@ -22,6 +24,7 @@ const userNavItems: NavItem[] = [
   { href: '/book-token', label: 'Book Token', icon: CalendarCheck2, tooltip: 'Book Token' },
   { href: '/find-fps', label: 'Find FPS', icon: Map, tooltip: 'Find FPS' },
   { href: '/complaints', label: 'My Complaints', icon: MessageSquareWarning, tooltip: 'My Complaints' },
+  { href: '/profile', label: 'Profile', icon: User, tooltip: 'User Profile' },
 ];
 
 const distributorNavItems: NavItem[] = [
@@ -29,6 +32,7 @@ const distributorNavItems: NavItem[] = [
   { href: '/distributor/stock', label: 'Stock Mgmt', icon: Box, tooltip: 'Stock Management' },
   { href: '/distributor/orders', label: 'Fulfilled Orders', icon: ClipboardList, tooltip: 'Fulfilled Orders' },
   { href: '/distributor/slots', label: 'Distribution Slots', icon: Clock, tooltip: 'Distribution Slots' },
+  { href: '/profile', label: 'Profile', icon: User, tooltip: 'Distributor Profile' },
 ];
 
 export default function SidebarNav({ role }: { role: 'user' | 'distributor' }) {
