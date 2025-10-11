@@ -19,7 +19,7 @@ export default function StockManagementPage() {
   const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [newStockValues, setNewStockValues] = useState<{ [key: string]: string }>({});
-  const [distributionDate, setDistributionDate] = useState<Date | undefined>();
+  const [distributionDate, setDistributionDate] = useState<Date>();
 
   const handleStockChange = (productId: string, value: string) => {
     setNewStockValues((prev) => ({ ...prev, [productId]: value }));
