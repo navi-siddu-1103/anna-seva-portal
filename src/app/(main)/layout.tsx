@@ -32,7 +32,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const userName = isDistributor ? 'Distributor' : 'Card Holder';
 
   if (!isMounted) {
-    return null; 
+    return (
+        <div className="min-h-screen w-full" />
+    );
   }
 
   return (
@@ -62,7 +64,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       </Sidebar>
       <SidebarInset>
         <Header />
-        <main className="flex-1 overflow-auto p-4 sm:px-6 sm:py-0">{children}</main>
+        <main className="flex-1 overflow-auto">{children}</main>
       </SidebarInset>
     </SidebarProvider>
   );
