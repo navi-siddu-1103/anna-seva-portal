@@ -17,7 +17,9 @@ import { usePathname } from 'next/navigation';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import SidebarNav from './sidebar-nav';
 import { WheatIcon } from '../icons';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
+
+type Language = 'English' | 'हिंदी (Hindi)' | 'ಕನ್ನಡ (Kannada)';
 
 export default function Header() {
   const pathname = usePathname();
@@ -27,6 +29,9 @@ export default function Header() {
   
   const role = useMemo(() => pathname.startsWith('/distributor') ? 'distributor' : 'user', [pathname]);
   const profileLink = isDistributor ? '/distributor/profile' : '/profile';
+
+  const [selectedLanguage, setSelectedLanguage] = useState<Language>('English');
+
 
   return (
     <header className="sticky top-0 z-30 flex h-16 items-center gap-4 border-b bg-background/80 backdrop-blur-sm px-4 md:px-6">
@@ -55,14 +60,14 @@ export default function Header() {
           <DropdownMenuTrigger asChild>
             <Button variant="ghost" className="flex items-center gap-2">
               <Globe className="h-4 w-4" />
-              <span>English</span>
+              <span>{selectedLanguage.split(' ')[0]}</span>
               <ChevronDown className="h-4 w-4 opacity-50" />
             </Button>
           </DropdownMenuTrigger>
           <DropdownMenuContent align="end">
-            <DropdownMenuItem>English</DropdownMenuItem>
-            <DropdownMenuItem>हिंदी (Hindi)</DropdownMenuItem>
-            <DropdownMenuItem>ಕನ್ನಡ (Kannada)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSelectedLanguage('English')}>English</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSelectedLanguage('हिंदी (Hindi)')}>हिंदी (Hindi)</DropdownMenuItem>
+            <DropdownMenuItem onSelect={() => setSelectedLanguage('ಕನ್ನಡ (Kannada)')}>ಕನ್ನಡ (Kannada)</DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
 
