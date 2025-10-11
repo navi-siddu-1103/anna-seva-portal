@@ -7,7 +7,6 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   Sidebar,
   SidebarProvider,
-  SidebarInset,
   SidebarHeader,
   SidebarContent,
   SidebarFooter,
@@ -52,7 +51,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
               </div>
           </SidebarFooter>
         </Sidebar>
-        <div className="flex flex-col md:pl-[16rem]">
+        <div className="flex flex-col md:pl-64">
           <Header />
           <main className="flex-1 p-4 sm:px-6 sm:py-0">{children}</main>
         </div>
