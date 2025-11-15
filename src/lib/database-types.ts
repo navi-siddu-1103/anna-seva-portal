@@ -1,0 +1,70 @@
+import { ObjectId } from 'mongodb';
+
+// Base User type (stored in 'users' collection)
+export interface User {
+  _id: ObjectId;
+  name: string;
+  email: string;
+  password: string;
+  role: 'cardholder' | 'distributor' | 'admin';
+  createdAt: Date;
+}
+
+// Cardholder details (stored in 'cardholders' collection)
+export interface Cardholder {
+  _id: ObjectId;
+  userId: ObjectId; // Reference to User._id
+  name: string;
+  email: string;
+  cardNumber: string;
+  phone: string;
+  status: 'active' | 'inactive' | 'suspended';
+  entitlements: {
+    rice: number; // kg per month
+    wheat: number; // kg per month
+    sugar: number; // kg per month
+  };
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+// Distributor details (stored in 'distributors' collection)
+export interface Distributor {
+  _id: ObjectId;
+  userId: ObjectId; // Reference to User._id
+  ownerName: string;
+  email: string;
+  shopName: string;
+  licenseNumber: string;
+  phone: string;
+  address: string;
+  status: 'active' | 'inactive' | 'suspended';
+  rating: number; // 0-5
+  totalOrders: number;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+// Order type (for future use)
+export interface Order {
+  _id: ObjectId;
+  cardholderId: ObjectId;
+  distributorId: ObjectId;
+  items: {
+    productId: number;
+    productName: string;
+    quantity: number;
+    price: number;
+  }[];
+  totalAmount: number;
+  status: 'pending' | 'confirmed' | 'completed' | 'cancelled';
+  orderDate: Date;
+  completionDate?: Date;
+}
+
+// Token payload type
+export interface TokenPayload {
+  userId: string;
+  email: string;
+  role: 'cardholder' | 'distributor' | 'admin';
+}

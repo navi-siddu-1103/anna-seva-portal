@@ -11,6 +11,7 @@ import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter
 import { ShoppingCart, Minus, Plus, Trash2, IndianRupee, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { getProductImage, getProductPlaceholder } from '@/lib/product-images';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -86,8 +87,17 @@ export default function OrderPage() {
                 <div className="space-y-4">
                   {cart.map(({ product, quantity }) => (
                     <div key={product.id} className="flex items-center gap-4">
-                      <div className="flex h-16 w-16 items-center justify-center rounded-md border bg-muted">
-                        <Package size={32} className="text-muted-foreground" />
+                      <div className="relative h-16 w-16 flex-shrink-0 rounded-md overflow-hidden border bg-muted">
+                        <Image
+                          src={getProductImage(product.id)}
+                          alt={product.name}
+                          fill
+                          className="object-cover"
+                          onError={(e) => {
+                            const target = e.target as HTMLImageElement;
+                            target.src = getProductPlaceholder(product.name);
+                          }}
+                        />
                       </div>
                       <div className="flex-grow">
                         <p className="font-semibold">{product.name}</p>
@@ -149,8 +159,17 @@ export default function OrderPage() {
         {allProducts.map((product) => (
           <Card key={product.id} className="flex flex-col">
             <CardHeader>
-              <div className="aspect-[4/3] relative mb-4 flex items-center justify-center bg-muted rounded-t-lg">
-                 <Package size={64} className="text-muted-foreground" />
+              <div className="aspect-[4/3] relative mb-4 rounded-t-lg overflow-hidden bg-muted">
+                <Image
+                  src={getProductImage(product.id)}
+                  alt={product.name}
+                  fill
+                  className="object-cover"
+                  onError={(e) => {
+                    const target = e.target as HTMLImageElement;
+                    target.src = getProductPlaceholder(product.name);
+                  }}
+                />
               </div>
               <CardTitle>{product.name}</CardTitle>
               <CardDescription>{product.entitlement}</CardDescription>

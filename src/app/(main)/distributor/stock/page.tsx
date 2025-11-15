@@ -2,6 +2,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { Card, CardHeader, CardTitle, CardContent, CardDescription, CardFooter } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
@@ -14,12 +15,14 @@ import { Calendar } from "@/components/ui/calendar";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import type { Product } from "@/lib/types";
+import { getProductImage, getProductPlaceholder } from "@/lib/product-images";
 
 export default function StockManagementPage() {
   const { toast } = useToast();
   const [products, setProducts] = useState<Product[]>(initialProducts);
   const [newStockValues, setNewStockValues] = useState<{ [key: string]: string }>({});
   const [distributionDate, setDistributionDate] = useState<Date>();
+  const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   const handleStockChange = (productId: string, value: string) => {
     setNewStockValues((prev) => ({ ...prev, [productId]: value }));
@@ -65,6 +68,11 @@ export default function StockManagementPage() {
     });
   };
 
+  const handleDateSelect = (date: Date | undefined) => {
+    setDistributionDate(date);
+    setIsCalendarOpen(false);
+  };
+
   return (
     <div className="container mx-auto p-4 md:p-8">
       <h1 className="text-3xl font-bold font-headline mb-8">Stock Management</h1>
@@ -79,6 +87,7 @@ export default function StockManagementPage() {
               <Table>
                 <TableHeader>
                   <TableRow>
+                    <TableHead className="w-[100px]">Image</TableHead>
                     <TableHead>Product</TableHead>
                     <TableHead>Current Stock</TableHead>
                     <TableHead className="w-[150px]">Add Stock</TableHead>
@@ -88,6 +97,20 @@ export default function StockManagementPage() {
                 <TableBody>
                   {products.map((product) => (
                     <TableRow key={product.id}>
+                      <TableCell>
+                        <div className="relative w-16 h-16 rounded-md overflow-hidden bg-muted">
+                          <Image
+                            src={getProductImage(product.id)}
+                            alt={product.name}
+                            fill
+                            className="object-cover"
+                            onError={(e) => {
+                              const target = e.target as HTMLImageElement;
+                              target.src = getProductPlaceholder(product.name);
+                            }}
+                          />
+                        </div>
+                      </TableCell>
                       <TableCell className="font-medium">{product.name}</TableCell>
                       <TableCell>{product.stock} {product.unit}</TableCell>
                       <TableCell>
@@ -117,7 +140,7 @@ export default function StockManagementPage() {
             <CardContent className="space-y-4">
               <div className="space-y-2">
                 <Label htmlFor="dist-date">Distribution Start Date</Label>
-                <Popover>
+                <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                   <PopoverTrigger asChild>
                     <Button
                       variant={"outline"}
@@ -130,11 +153,11 @@ export default function StockManagementPage() {
                       {distributionDate ? distributionDate.toLocaleDateString() : <span>Pick a date</span>}
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent className="w-auto p-0">
+                  <PopoverContent className="w-auto p-0" align="start">
                     <Calendar
                       mode="single"
                       selected={distributionDate}
-                      onSelect={setDistributionDate}
+                      onSelect={handleDateSelect}
                       initialFocus
                       disabled={(date) => date < new Date(new Date().setDate(new Date().getDate() - 1))}
                     />
