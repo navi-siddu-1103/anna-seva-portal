@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { connectToDatabase } from '@/lib/mongodb';
 import { hashPassword, createToken } from '@/lib/auth';
+import { sendWelcomeEmail, sendWelcomeSMS } from '@/lib/notifications';
 
 export async function POST(request: Request) {
   try {
@@ -71,6 +72,17 @@ export async function POST(request: Request) {
         totalOrders: 0
       };
       await distributors.insertOne(distributorDoc);
+    }
+
+    // Send welcome notifications (email and SMS)
+    try {
+      await sendWelcomeEmail(email, name, role || 'cardholder');
+      if (phone) {
+        await sendWelcomeSMS(phone, name, role || 'cardholder');
+      }
+    } catch (notificationError) {
+      // Log but don't fail registration if notification fails
+      console.error('Failed to send welcome notifications:', notificationError);
     }
 
     const token = createToken({ userId, email, role: role || 'cardholder' });

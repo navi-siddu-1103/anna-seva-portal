@@ -45,6 +45,51 @@ export interface Distributor {
   updatedAt?: Date;
 }
 
+// Token booking (stored in 'tokens' collection)
+export interface Token {
+  _id: ObjectId;
+  tokenNumber: string; // Unique token identifier
+  cardholderId: ObjectId;
+  cardholderName: string;
+  cardholderEmail: string;
+  cardholderPhone: string;
+  cardNumber: string;
+  distributorId: ObjectId;
+  distributorName: string;
+  distributorAddress: string;
+  items: {
+    productId: number;
+    productName: string;
+    quantity: number;
+  }[];
+  collectionDate: Date;
+  bookingDate: Date;
+  status: 'booked' | 'collected' | 'cancelled';
+  distributionDate?: Date;
+  distributedBy?: string;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
+// Distribution record (stored in 'distributions' collection)
+export interface Distribution {
+  _id: ObjectId;
+  tokenNumber: string;
+  cardholderId: ObjectId;
+  cardholderName: string;
+  cardholderEmail: string;
+  cardholderPhone: string;
+  distributorId: ObjectId;
+  distributorName: string;
+  items: {
+    productId: number;
+    productName: string;
+    quantity: number;
+  }[];
+  distributionDate: Date;
+  createdAt: Date;
+}
+
 // Order type (for future use)
 export interface Order {
   _id: ObjectId;

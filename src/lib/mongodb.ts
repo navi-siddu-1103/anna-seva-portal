@@ -13,8 +13,12 @@ export async function connectToDatabase() {
   }
 
   const options: MongoClientOptions = {
-    serverSelectionTimeoutMS: 5000,
-    connectTimeoutMS: 10000,
+    serverSelectionTimeoutMS: 10000,
+    connectTimeoutMS: 15000,
+    socketTimeoutMS: 45000,
+    tls: true,
+    tlsAllowInvalidCertificates: true,
+    tlsAllowInvalidHostnames: true,
   };
 
   // Remove TLS from URI and handle it via options
