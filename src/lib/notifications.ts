@@ -1,6 +1,18 @@
 import nodemailer from 'nodemailer';
 import twilio from 'twilio';
 
+// HTML escape function to prevent XSS
+function escapeHtml(text: string): string {
+  const map: { [key: string]: string } = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#039;'
+  };
+  return text.replace(/[&<>"']/g, (char) => map[char]);
+}
+
 // Email Configuration
 const emailTransporter = nodemailer.createTransport({
   host: process.env.SMTP_HOST || 'smtp.gmail.com',
@@ -30,6 +42,7 @@ export async function sendWelcomeEmail(
     return;
   }
 
+  const escapedName = escapeHtml(name);
   const subject = `Welcome to Anna Seva Portal - ${role === 'cardholder' ? 'Cardholder' : 'Distributor'} Registration Successful`;
   
   const html = `
@@ -52,7 +65,7 @@ export async function sendWelcomeEmail(
           <h1>🌾 Anna Seva Portal</h1>
         </div>
         <div class="content">
-          <h2>Welcome, ${name}!</h2>
+          <h2>Welcome, ${escapedName}!</h2>
           <p>Your registration as a <strong>${role === 'cardholder' ? 'Cardholder' : 'Distributor'}</strong> has been successfully completed.</p>
           
           ${role === 'cardholder' ? `
@@ -115,10 +128,13 @@ export async function sendTokenBookingEmail(
     return;
   }
 
-  const subject = `Token Booking Confirmed - #${tokenDetails.tokenNumber}`;
+  const escapedName = escapeHtml(name);
+  const escapedShopName = escapeHtml(tokenDetails.shopName);
+  const escapedShopAddress = escapeHtml(tokenDetails.shopAddress);
+  const subject = `Token Booking Confirmed - #${escapeHtml(tokenDetails.tokenNumber)}`;
   
   const itemsList = tokenDetails.items
-    .map(item => `<li>${item.name}: ${item.quantity} kg</li>`)
+    .map(item => `<li>${escapeHtml(item.name)}: ${item.quantity} kg</li>`)
     .join('');
 
   const html = `
@@ -143,13 +159,13 @@ export async function sendTokenBookingEmail(
           <h1>🌾 Token Booking Confirmed</h1>
         </div>
         <div class="content">
-          <h2>Hello, ${name}!</h2>
+          <h2>Hello, ${escapedName}!</h2>
           <p>Your token has been successfully booked.</p>
           
           <div class="token-box">
             <p><strong>Token Number:</strong></p>
-            <div class="token-number">${tokenDetails.tokenNumber}</div>
-            <p><strong>Booking Date:</strong> ${tokenDetails.bookingDate}</p>
+            <div class="token-number">${escapeHtml(tokenDetails.tokenNumber)}</div>
+            <p><strong>Booking Date:</strong> ${escapeHtml(tokenDetails.bookingDate)}</p>
           </div>
 
           <div class="details">
@@ -159,8 +175,8 @@ export async function sendTokenBookingEmail(
 
           <div class="details">
             <h3>Collection Point:</h3>
-            <p><strong>${tokenDetails.shopName}</strong><br>
-            ${tokenDetails.shopAddress}</p>
+            <p><strong>${escapedShopName}</strong><br>
+            ${escapedShopAddress}</p>
           </div>
 
           <p><strong>Important:</strong> Please bring your ration card and this token number when collecting your items.</p>
@@ -201,10 +217,12 @@ export async function sendDistributionConfirmationEmail(
     return;
   }
 
-  const subject = `Food Grains Distributed - Token #${distributionDetails.tokenNumber}`;
+  const escapedName = escapeHtml(name);
+  const escapedShopName = escapeHtml(distributionDetails.shopName);
+  const subject = `Food Grains Distributed - Token #${escapeHtml(distributionDetails.tokenNumber)}`;
   
   const itemsList = distributionDetails.items
-    .map(item => `<li>${item.name}: ${item.quantity} kg</li>`)
+    .map(item => `<li>${escapeHtml(item.name)}: ${item.quantity} kg</li>`)
     .join('');
 
   const html = `
@@ -227,13 +245,13 @@ export async function sendDistributionConfirmationEmail(
           <h1>✅ Food Grains Distributed</h1>
         </div>
         <div class="content">
-          <h2>Hello, ${name}!</h2>
+          <h2>Hello, ${escapedName}!</h2>
           <p>Your food grains have been successfully distributed.</p>
           
           <div class="success-box">
-            <p><strong>Token Number:</strong> ${distributionDetails.tokenNumber}</p>
-            <p><strong>Distribution Date:</strong> ${distributionDetails.distributionDate}</p>
-            <p><strong>Distributed By:</strong> ${distributionDetails.shopName}</p>
+            <p><strong>Token Number:</strong> ${escapeHtml(distributionDetails.tokenNumber)}</p>
+            <p><strong>Distribution Date:</strong> ${escapeHtml(distributionDetails.distributionDate)}</p>
+            <p><strong>Distributed By:</strong> ${escapedShopName}</p>
           </div>
 
           <h3>Items Received:</h3>
@@ -262,79 +280,6 @@ export async function sendDistributionConfirmationEmail(
   }
 }
 
-// SMS Functions
-export async function sendWelcomeSMS(phone: string, name: string, role: 'cardholder' | 'distributor') {
-  if (!twilioClient || !twilioPhoneNumber) {
-    console.warn('SMS service not configured. Skipping SMS.');
-    return;
-  }
-
-  const message = role === 'cardholder'
-    ? `Welcome to Anna Seva Portal, ${name}! Your cardholder account is now active. You can book tokens and manage your ration entitlements. Login at ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}`
-    : `Welcome to Anna Seva Portal, ${name}! Your distributor account for ${name} is now active. Start managing your Fair Price Shop operations. Login at ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}`;
-
-  try {
-    await twilioClient.messages.create({
-      body: message,
-      from: twilioPhoneNumber,
-      to: phone,
-    });
-    console.log(`Welcome SMS sent to ${phone}`);
-  } catch (error) {
-    console.error('Error sending welcome SMS:', error);
-  }
-}
-
-export async function sendTokenBookingSMS(
-  phone: string,
-  name: string,
-  tokenNumber: string,
-  shopName: string
-) {
-  if (!twilioClient || !twilioPhoneNumber) {
-    console.warn('SMS service not configured. Skipping SMS.');
-    return;
-  }
-
-  const message = `Dear ${name}, your token #${tokenNumber} has been booked successfully at ${shopName}. Please bring your ration card for collection. - Anna Seva Portal`;
-
-  try {
-    await twilioClient.messages.create({
-      body: message,
-      from: twilioPhoneNumber,
-      to: phone,
-    });
-    console.log(`Token booking SMS sent to ${phone}`);
-  } catch (error) {
-    console.error('Error sending token booking SMS:', error);
-  }
-}
-
-export async function sendDistributionConfirmationSMS(
-  phone: string,
-  name: string,
-  tokenNumber: string,
-  items: string
-) {
-  if (!twilioClient || !twilioPhoneNumber) {
-    console.warn('SMS service not configured. Skipping SMS.');
-    return;
-  }
-
-  const message = `Dear ${name}, your food grains (${items}) for token #${tokenNumber} have been distributed successfully. Thank you for using Anna Seva Portal.`;
-
-  try {
-    await twilioClient.messages.create({
-      body: message,
-      from: twilioPhoneNumber,
-      to: phone,
-    });
-    console.log(`Distribution confirmation SMS sent to ${phone}`);
-  } catch (error) {
-    console.error('Error sending distribution confirmation SMS:', error);
-  }
-}
-
 export async function sendDistributionCycleAnnouncementEmail(
   to: string,
   name: string,
@@ -349,7 +294,11 @@ export async function sendDistributionCycleAnnouncementEmail(
     return;
   }
 
-  const subject = `Next Distribution Cycle Announced - ${cycleDetails.distributorName}`;
+  const escapedName = escapeHtml(name);
+  const escapedDistributorName = escapeHtml(cycleDetails.distributorName);
+  const escapedCycleStartDate = escapeHtml(cycleDetails.cycleStartDate);
+  const escapedDescription = cycleDetails.description ? escapeHtml(cycleDetails.description) : null;
+  const subject = `Next Distribution Cycle Announced - ${escapedDistributorName}`;
   
   const html = `
     <!DOCTYPE html>
@@ -373,14 +322,14 @@ export async function sendDistributionCycleAnnouncementEmail(
           <h1>📢 Distribution Cycle Announced</h1>
         </div>
         <div class="content">
-          <h2>Hello, ${name}!</h2>
+          <h2>Hello, ${escapedName}!</h2>
           <p>Good news! A new distribution cycle has been announced.</p>
           
           <div class="announcement-box">
-            <p><strong>Fair Price Shop:</strong> ${cycleDetails.distributorName}</p>
+            <p><strong>Fair Price Shop:</strong> ${escapedDistributorName}</p>
             <p><strong>Distribution Start Date:</strong></p>
-            <div class="start-date">${cycleDetails.cycleStartDate}</div>
-            ${cycleDetails.description ? `<p><strong>Details:</strong> ${cycleDetails.description}</p>` : ''}
+            <div class="start-date">${escapedCycleStartDate}</div>
+            ${escapedDescription ? `<p><strong>Details:</strong> ${escapedDescription}</p>` : ''}
           </div>
 
           <p>You can now book your tokens for the upcoming distribution cycle. Visit your dashboard to book your ration quota.</p>
@@ -411,6 +360,86 @@ export async function sendDistributionCycleAnnouncementEmail(
   }
 }
 
+// SMS Functions
+export async function sendWelcomeSMS(phone: string, name: string, role: 'cardholder' | 'distributor') {
+  if (!twilioClient || !twilioPhoneNumber) {
+    console.warn('SMS service not configured. Skipping SMS.');
+    return;
+  }
+
+  const escapedName = escapeHtml(name);
+  const message = role === 'cardholder'
+    ? `Welcome to Anna Seva Portal, ${escapedName}! Your cardholder account is now active. You can book tokens and manage your ration entitlements. Login at ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}`
+    : `Welcome to Anna Seva Portal, ${escapedName}! Your distributor account for ${escapedName} is now active. Start managing your Fair Price Shop operations. Login at ${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}`;
+
+  try {
+    await twilioClient.messages.create({
+      body: message,
+      from: twilioPhoneNumber,
+      to: phone,
+    });
+    console.log(`Welcome SMS sent to ${phone}`);
+  } catch (error) {
+    console.error('Error sending welcome SMS:', error);
+  }
+}
+
+export async function sendTokenBookingSMS(
+  phone: string,
+  name: string,
+  tokenNumber: string,
+  shopName: string
+) {
+  if (!twilioClient || !twilioPhoneNumber) {
+    console.warn('SMS service not configured. Skipping SMS.');
+    return;
+  }
+
+  const escapedName = escapeHtml(name);
+  const escapedTokenNumber = escapeHtml(tokenNumber);
+  const escapedShopName = escapeHtml(shopName);
+  const message = `Dear ${escapedName}, your token #${escapedTokenNumber} has been booked successfully at ${escapedShopName}. Please bring your ration card for collection. - Anna Seva Portal`;
+
+  try {
+    await twilioClient.messages.create({
+      body: message,
+      from: twilioPhoneNumber,
+      to: phone,
+    });
+    console.log(`Token booking SMS sent to ${phone}`);
+  } catch (error) {
+    console.error('Error sending token booking SMS:', error);
+  }
+}
+
+export async function sendDistributionConfirmationSMS(
+  phone: string,
+  name: string,
+  tokenNumber: string,
+  items: string
+) {
+  if (!twilioClient || !twilioPhoneNumber) {
+    console.warn('SMS service not configured. Skipping SMS.');
+    return;
+  }
+
+  const escapedName = escapeHtml(name);
+  const escapedTokenNumber = escapeHtml(tokenNumber);
+  const escapedItems = escapeHtml(items);
+  const message = `Dear ${escapedName}, your food grains (${escapedItems}) for token #${escapedTokenNumber} have been distributed successfully. Thank you for using Anna Seva Portal.`;
+
+  try {
+    await twilioClient.messages.create({
+      body: message,
+      from: twilioPhoneNumber,
+      to: phone,
+    });
+    console.log(`Distribution confirmation SMS sent to ${phone}`);
+  } catch (error) {
+    console.error('Error sending distribution confirmation SMS:', error);
+  }
+}
+
 export async function sendDistributionCycleAnnouncementSMS(
   phone: string,
   name: string,
@@ -422,7 +451,10 @@ export async function sendDistributionCycleAnnouncementSMS(
     return;
   }
 
-  const message = `Dear ${name}, a new distribution cycle has been announced by ${distributorName}. Distribution starts on ${cycleStartDate}. Visit your dashboard to book your tokens. - Anna Seva Portal`;
+  const escapedName = escapeHtml(name);
+  const escapedDistributorName = escapeHtml(distributorName);
+  const escapedCycleStartDate = escapeHtml(cycleStartDate);
+  const message = `Dear ${escapedName}, a new distribution cycle has been announced by ${escapedDistributorName}. Distribution starts on ${escapedCycleStartDate}. Visit your dashboard to book your tokens. - Anna Seva Portal`;
 
   try {
     await twilioClient.messages.create({
@@ -435,3 +467,4 @@ export async function sendDistributionCycleAnnouncementSMS(
     console.error('Error sending distribution cycle announcement SMS:', error);
   }
 }
+
