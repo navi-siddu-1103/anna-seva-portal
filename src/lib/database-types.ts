@@ -90,6 +90,20 @@ export interface Distribution {
   createdAt: Date;
 }
 
+// Distribution Cycle (stored in 'distributionCycles' collection)
+export interface DistributionCycle {
+  _id: ObjectId;
+  distributorId: ObjectId;
+  distributorName: string;
+  cycleStartDate: Date;
+  announcementDate: Date;
+  description?: string;
+  status: 'announced' | 'ongoing' | 'completed';
+  notificationsSent: boolean;
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
 // Order type (for future use)
 export interface Order {
   _id: ObjectId;
