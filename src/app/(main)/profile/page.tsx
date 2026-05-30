@@ -57,7 +57,7 @@ export default function ProfilePage() {
         };
 
         fetchCardholderProfile();
-    }, [toast]);
+    }, []);
 
     if (loading) {
         return (

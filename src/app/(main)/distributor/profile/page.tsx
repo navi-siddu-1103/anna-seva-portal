@@ -58,7 +58,7 @@ export default function DistributorProfilePage() {
         };
 
         fetchDistributorProfile();
-    }, [toast]);
+    }, []);
 
     if (loading) {
         return (
