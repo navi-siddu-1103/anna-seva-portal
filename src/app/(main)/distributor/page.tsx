@@ -1,7 +1,6 @@
-
 "use client";
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
 import { Box, ClipboardList, Clock, AlertTriangle } from "lucide-react"
@@ -16,12 +15,55 @@ const generateChartData = () => [
   { name: "Oil", total: Math.floor(Math.random() * 500) + 100 },
 ];
 
+interface DistributionCycle {
+  cycleStartDate: string;
+}
+
 export default function DistributorDashboard() {
   const [chartData, setChartData] = React.useState<{name: string, total: number}[]>([]);
+  const [nextCycle, setNextCycle] = useState<DistributionCycle | null>(null);
+  const [loadingCycle, setLoadingCycle] = useState(false);
 
   React.useEffect(() => {
     setChartData(generateChartData());
   }, []);
+
+  const fetchDistributionCycle = async () => {
+    setLoadingCycle(true);
+    try {
+      const response = await fetch('/api/distributor/announce-cycle');
+      if (response.ok) {
+        const data = await response.json();
+        if (data.data && data.data.length > 0) {
+          // Get the latest cycle (first one since results are sorted by announcementDate: -1)
+          setNextCycle(data.data[0]);
+        }
+      }
+    } catch (error) {
+      console.error('Failed to fetch distribution cycle:', error);
+    } finally {
+      setLoadingCycle(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchDistributionCycle();
+  }, []);
+
+  const formatCycleDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric'
+      });
+    } catch {
+      return 'Aug 1, 2024';
+    }
+  };
+
+  const cycleDate = nextCycle ? formatCycleDate(nextCycle.cycleStartDate) : 'Aug 1, 2024';
 
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
@@ -55,7 +97,7 @@ export default function DistributorDashboard() {
             <Clock className="h-4 w-4 text-muted-foreground" />
           </CardHeader>
           <CardContent>
-            <div className="text-2xl font-bold">Aug 1, 2024</div>
+            <div className="text-2xl font-bold">{cycleDate}</div>
             <p className="text-xs text-muted-foreground">starting next week</p>
           </CardContent>
         </Card>
@@ -102,7 +144,7 @@ export default function DistributorDashboard() {
       </div>
       
       <div className="grid gap-6 grid-cols-1">
-        <AnnounceDistributionCycleForm />
+        <AnnounceDistributionCycleForm onSuccess={fetchDistributionCycle} />
       </div>
     </div>
   )

@@ -99,11 +99,36 @@ export async function PUT(request: Request) {
       fpsUpdateDoc.lng = lng;
     }
 
-    // Update FPS record
-    await fps.updateOne(
-      { distributorId },
+    // Update FPS record - using explicit field reference instead of shorthand
+    const fpsUpdateResult = await fps.updateOne(
+      { distributorId: distributorId },
       { $set: fpsUpdateDoc }
     );
+
+    // If FPS record was not found, create it (fallback for migration cases)
+    if (fpsUpdateResult.matchedCount === 0) {
+      const { lat, lng } = getCoordinatesFromAddress(address || '');
+      const fpsDoc = {
+        distributorId: distributorId,
+        name: shopName || '',
+        shopkeeper: ownerName || '',
+        hours: '9 AM - 6 PM',
+        address: address || '',
+        lat,
+        lng,
+        stockStatus: 'Available',
+        createdAt: new Date(),
+        updatedAt: new Date()
+      };
+      try {
+        await fps.insertOne(fpsDoc);
+      } catch (insertErr: any) {
+        // If insert fails due to duplicate, it's okay - just log it
+        if (insertErr.code !== 11000) {
+          throw insertErr;
+        }
+      }
+    }
 
     return NextResponse.json({ 
       success: true, 
