@@ -3,6 +3,13 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { hashPassword, createToken } from '@/lib/auth';
 import { sendWelcomeEmail, sendWelcomeSMS } from '@/lib/notifications';
 
+// Simple geocoding mock - in production, this should use a real geocoding service
+function getCoordinatesFromAddress(address: string): { lat: number; lng: number } {
+  // For now, return default coordinates for Bangalore
+  // In a real implementation, you would call a geocoding API like Google Maps
+  return { lat: 12.9716, lng: 77.5946 };
+}
+
 export async function POST(request: Request) {
   try {
     const body = await request.json();
@@ -72,6 +79,22 @@ export async function POST(request: Request) {
         totalOrders: 0
       };
       await distributors.insertOne(distributorDoc);
+
+      // Create FPS record for the distributor
+      const fps = db.collection('fps');
+      const { lat, lng } = getCoordinatesFromAddress(address || '');
+      const fpsDoc = {
+        distributorId: result.insertedId,
+        name: shopName || '',
+        shopkeeper: name,
+        hours: '9 AM - 6 PM', // Default hours
+        address: address || '',
+        lat,
+        lng,
+        stockStatus: 'Available',
+        createdAt: new Date()
+      };
+      await fps.insertOne(fpsDoc);
     }
 
     // Send welcome notifications (email and SMS)
