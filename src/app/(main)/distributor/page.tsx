@@ -6,6 +6,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/com
 import { Badge } from "@/components/ui/badge"
 import { Box, ClipboardList, Clock, AlertTriangle } from "lucide-react"
 import { Bar, BarChart, ResponsiveContainer, XAxis, YAxis } from "recharts"
+import AnnounceDistributionCycleForm from '@/components/distributor/announce-cycle-form';
 
 const generateChartData = () => [
   { name: "Rice", total: Math.floor(Math.random() * 500) + 100 },
@@ -98,6 +99,10 @@ export default function DistributorDashboard() {
             </div>
           </CardContent>
         </Card>
+      </div>
+      
+      <div className="grid gap-6 grid-cols-1">
+        <AnnounceDistributionCycleForm />
       </div>
     </div>
   )

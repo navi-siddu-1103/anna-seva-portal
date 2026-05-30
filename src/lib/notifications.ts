@@ -334,3 +334,104 @@ export async function sendDistributionConfirmationSMS(
     console.error('Error sending distribution confirmation SMS:', error);
   }
 }
+
+export async function sendDistributionCycleAnnouncementEmail(
+  to: string,
+  name: string,
+  cycleDetails: {
+    distributorName: string;
+    cycleStartDate: string;
+    description?: string;
+  }
+) {
+  if (!process.env.SMTP_USER) {
+    console.warn('Email service not configured. Skipping email.');
+    return;
+  }
+
+  const subject = `Next Distribution Cycle Announced - ${cycleDetails.distributorName}`;
+  
+  const html = `
+    <!DOCTYPE html>
+    <html>
+    <head>
+      <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: linear-gradient(135deg, #f5d547 0%, #e6a834 100%); padding: 30px; text-align: center; border-radius: 10px 10px 0 0; }
+        .header h1 { color: #2d1f00; margin: 0; font-size: 28px; }
+        .content { background: #f9f9f9; padding: 30px; border-radius: 0 0 10px 10px; }
+        .announcement-box { background: white; padding: 20px; border-left: 4px solid #f5d547; margin: 20px 0; }
+        .start-date { font-size: 20px; font-weight: bold; color: #e6a834; margin: 10px 0; }
+        .button { display: inline-block; padding: 12px 30px; background: #e6a834; color: white; text-decoration: none; border-radius: 5px; margin: 20px 0; }
+        .footer { text-align: center; margin-top: 20px; color: #666; font-size: 12px; }
+      </style>
+    </head>
+    <body>
+      <div class="container">
+        <div class="header">
+          <h1>📢 Distribution Cycle Announced</h1>
+        </div>
+        <div class="content">
+          <h2>Hello, ${name}!</h2>
+          <p>Good news! A new distribution cycle has been announced.</p>
+          
+          <div class="announcement-box">
+            <p><strong>Fair Price Shop:</strong> ${cycleDetails.distributorName}</p>
+            <p><strong>Distribution Start Date:</strong></p>
+            <div class="start-date">${cycleDetails.cycleStartDate}</div>
+            ${cycleDetails.description ? `<p><strong>Details:</strong> ${cycleDetails.description}</p>` : ''}
+          </div>
+
+          <p>You can now book your tokens for the upcoming distribution cycle. Visit your dashboard to book your ration quota.</p>
+          
+          <a href="${process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:9002'}/dashboard" class="button">Go to Dashboard</a>
+
+          <p>If you have any questions, please contact your Fair Price Shop directly.</p>
+        </div>
+        <div class="footer">
+          <p>Anna Seva Portal | A Digital India Initiative</p>
+          <p>This is an automated message. Please do not reply to this email.</p>
+        </div>
+      </div>
+    </body>
+    </html>
+  `;
+
+  try {
+    await emailTransporter.sendMail({
+      from: `"Anna Seva Portal" <${process.env.SMTP_USER}>`,
+      to,
+      subject,
+      html,
+    });
+    console.log(`Distribution cycle announcement email sent to ${to}`);
+  } catch (error) {
+    console.error('Error sending distribution cycle announcement email:', error);
+  }
+}
+
+export async function sendDistributionCycleAnnouncementSMS(
+  phone: string,
+  name: string,
+  distributorName: string,
+  cycleStartDate: string
+) {
+  if (!twilioClient || !twilioPhoneNumber) {
+    console.warn('SMS service not configured. Skipping SMS.');
+    return;
+  }
+
+  const message = `Dear ${name}, a new distribution cycle has been announced by ${distributorName}. Distribution starts on ${cycleStartDate}. Visit your dashboard to book your tokens. - Anna Seva Portal`;
+
+  try {
+    await twilioClient.messages.create({
+      body: message,
+      from: twilioPhoneNumber,
+      to: phone,
+    });
+    console.log(`Distribution cycle announcement SMS sent to ${phone}`);
+  } catch (error) {
+    console.error('Error sending distribution cycle announcement SMS:', error);
+  }
+}
