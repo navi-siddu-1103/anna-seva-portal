@@ -6,9 +6,10 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { User, Fingerprint, MapPin, Store, Phone, ArrowLeft, Loader2 } from 'lucide-react';
+import { User, Fingerprint, MapPin, Store, Phone, ArrowLeft, Loader2, Edit } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
+import ProfileEditForm from '@/components/distributor/profile-edit-form';
 
 interface DistributorData {
   ownerName: string;
@@ -25,6 +26,7 @@ export default function DistributorProfilePage() {
     const [distributorData, setDistributorData] = useState<DistributorData | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [isEditing, setIsEditing] = useState(false);
 
     useEffect(() => {
         const fetchDistributorProfile = async () => {
@@ -90,6 +92,30 @@ export default function DistributorProfilePage() {
         );
     }
 
+    if (isEditing && distributorData) {
+        return (
+            <div className="container mx-auto p-4 md:p-8">
+                <div className="flex items-center gap-4 mb-8">
+                    <Button variant="outline" size="icon" onClick={() => setIsEditing(false)}>
+                        <ArrowLeft className="h-4 w-4" />
+                        <span className="sr-only">Back</span>
+                    </Button>
+                    <h1 className="text-3xl font-bold font-headline">Edit Profile</h1>
+                </div>
+                <div className="max-w-2xl mx-auto">
+                    <ProfileEditForm 
+                        distributorData={distributorData}
+                        onSave={(data) => {
+                            setDistributorData({ ...distributorData, ...data });
+                            setIsEditing(false);
+                        }}
+                        onCancel={() => setIsEditing(false)}
+                    />
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="container mx-auto p-4 md:p-8">
             <div className="flex items-center gap-4 mb-8">
@@ -101,23 +127,33 @@ export default function DistributorProfilePage() {
             </div>
             <Card className="max-w-2xl mx-auto">
                 <CardHeader>
-                    <div className="flex items-center gap-4">
-                        <Avatar className="h-20 w-20">
-                             <AvatarFallback className="h-full w-full"><User size={40}/></AvatarFallback>
-                        </Avatar>
-                        <div>
-                            <CardTitle className="text-3xl">{distributorData.ownerName}</CardTitle>
-                            <CardDescription>PDS Distributor</CardDescription>
+                    <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-4">
+                            <Avatar className="h-20 w-20">
+                                 <AvatarFallback className="h-full w-full"><User size={40}/></AvatarFallback>
+                            </Avatar>
+                            <div>
+                                <CardTitle className="text-3xl">{distributorData?.ownerName}</CardTitle>
+                                <CardDescription>PDS Distributor</CardDescription>
+                            </div>
                         </div>
+                        <Button 
+                            variant="outline" 
+                            onClick={() => setIsEditing(true)}
+                            className="gap-2"
+                        >
+                            <Edit className="h-4 w-4" />
+                            Edit
+                        </Button>
                     </div>
                 </CardHeader>
                 <CardContent className="space-y-4">
                     <Separator />
                     <div className="space-y-3">
-                        <InfoItem icon={Store} label="Shop Name" value={distributorData.shopName} />
-                        <InfoItem icon={Fingerprint} label="License Number" value={distributorData.licenseNumber} />
-                        <InfoItem icon={MapPin} label="Address" value={distributorData.address} />
-                        <InfoItem icon={Phone} label="Mobile Number" value={distributorData.phone} />
+                        <InfoItem icon={Store} label="Shop Name" value={distributorData?.shopName || 'N/A'} />
+                        <InfoItem icon={Fingerprint} label="License Number" value={distributorData?.licenseNumber || 'N/A'} />
+                        <InfoItem icon={MapPin} label="Address" value={distributorData?.address || 'N/A'} />
+                        <InfoItem icon={Phone} label="Mobile Number" value={distributorData?.phone || 'N/A'} />
                     </div>
                 </CardContent>
             </Card>
