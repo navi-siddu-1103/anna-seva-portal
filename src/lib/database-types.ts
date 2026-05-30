@@ -121,6 +121,21 @@ export interface Order {
   completionDate?: Date;
 }
 
+// FPS (Fair Price Shop) record (stored in 'fps' collection)
+export interface FPS {
+  _id: ObjectId;
+  distributorId: ObjectId;
+  name: string;
+  shopkeeper: string;
+  hours: string;
+  address: string;
+  lat: number;
+  lng: number;
+  stockStatus: 'Available' | 'Limited' | 'Out of Stock';
+  createdAt: Date;
+  updatedAt?: Date;
+}
+
 // Token payload type
 export interface TokenPayload {
   userId: string;
