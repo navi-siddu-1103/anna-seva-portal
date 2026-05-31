@@ -29,6 +29,7 @@ export default function Header() {
   
   const role = useMemo(() => pathname.startsWith('/distributor') ? 'distributor' : 'user', [pathname]);
   const profileLink = isDistributor ? '/distributor/profile' : '/profile';
+  const dashboardLink = isDistributor ? '/distributor' : '/dashboard';
 
   const [selectedLanguage, setSelectedLanguage] = useState<Language>('English');
 
@@ -44,7 +45,7 @@ export default function Header() {
         </SheetTrigger>
         <SheetContent side="left" className="flex flex-col p-0 bg-sidebar text-sidebar-foreground">
             <div className="flex h-16 items-center border-b px-4">
-              <Link href="/" className="flex items-center gap-2 font-semibold">
+              <Link href={dashboardLink} className="flex items-center gap-2 font-semibold">
                 <WheatIcon className="h-6 w-6 text-primary" />
                 <span className="font-headline text-lg">Anna Seva Portal</span>
               </Link>
