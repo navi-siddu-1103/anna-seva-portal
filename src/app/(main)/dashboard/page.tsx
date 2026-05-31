@@ -1,13 +1,67 @@
+'use client';
+
+import { useEffect, useState } from 'react';
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card"
 import { Badge } from "@/components/ui/badge"
-import { Button } from "@/components/ui/button"
-import { FileText, Wheat, CalendarClock } from "lucide-react"
-import Link from "next/link"
 import PersonalizedSuggestions from "@/components/dashboard/personalized-suggestions"
 import DashboardCards from "@/components/dashboard/dashboard-cards"
 import DistributionCycleAnnouncement from "@/components/dashboard/distribution-cycle-announcement"
 
+interface Activity {
+  _id: string;
+  type: string;
+  description: string;
+  date: string;
+  status: string;
+}
+
 export default function DashboardPage() {
+  const [activities, setActivities] = useState<Activity[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchActivities = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        
+        // Try to fetch cardholder's distribution history (most recent activity)
+        const response = await fetch('/api/cardholder/distribution-cycles');
+        if (response.ok) {
+          const data = await response.json();
+          if (data.success && data.cycles && Array.isArray(data.cycles)) {
+            // Map distribution cycles to activity format
+            const formattedActivities = data.cycles.slice(0, 3).map((cycle: any) => ({
+              _id: cycle._id,
+              type: 'Distribution',
+              description: `Cycle for ${cycle.commodityTypes?.join(', ') || 'Rations'}`,
+              date: cycle.cycleStartDate,
+              status: 'Completed',
+            }));
+            setActivities(formattedActivities);
+          }
+        }
+      } catch (err) {
+        console.error('Failed to fetch activities:', err);
+        // Don't show error to user, just use empty state
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchActivities();
+  }, []);
+
+  const formatDate = (dateString: string) => {
+    try {
+      const date = new Date(dateString);
+      return date.toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+    } catch {
+      return dateString;
+    }
+  };
+
   return (
     <div className="flex-1 space-y-4 p-8 pt-6">
       <div className="flex items-center justify-between space-y-2">
@@ -26,38 +80,31 @@ export default function DashboardPage() {
               <CardDescription>A log of your recent transactions and bookings.</CardDescription>
             </CardHeader>
             <CardContent>
-              <ul className="space-y-4">
-                <li className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Ration Order Placed</p>
-                    <p className="text-sm text-muted-foreground">Order #202407-001</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">July 15, 2024</p>
-                    <Badge variant="secondary">Completed</Badge>
-                  </div>
-                </li>
-                <li className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Token Booked</p>
-                    <p className="text-sm text-muted-foreground">Token #T789-202408</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">July 28, 2024</p>
-                    <Badge variant="outline">Upcoming</Badge>
-                  </div>
-                </li>
-                <li className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">Ration Order Placed</p>
-                    <p className="text-sm text-muted-foreground">Order #202406-005</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">June 12, 2024</p>
-                    <Badge variant="secondary">Completed</Badge>
-                  </div>
-                </li>
-              </ul>
+              {loading && (
+                <p className="text-sm text-muted-foreground">Loading activity...</p>
+              )}
+              {error && (
+                <p className="text-sm text-destructive">Error: {error}</p>
+              )}
+              {!loading && !error && activities.length === 0 && (
+                <p className="text-sm text-muted-foreground">No recent activity to display.</p>
+              )}
+              {!loading && !error && activities.length > 0 && (
+                <ul className="space-y-4">
+                  {activities.map((activity) => (
+                    <li key={activity._id} className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium">{activity.type}</p>
+                        <p className="text-sm text-muted-foreground">{activity.description}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-medium">{formatDate(activity.date)}</p>
+                        <Badge variant={activity.status === 'Completed' ? 'secondary' : 'outline'}>{activity.status}</Badge>
+                      </div>
+                    </li>
+                  ))}
+                </ul>
+              )}
             </CardContent>
           </Card>
         </div>

@@ -21,12 +21,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   const isDistributor = role === 'distributor';
   const userName = isDistributor ? 'Distributor' : 'Card Holder';
+  const dashboardLink = isDistributor ? '/distributor' : '/dashboard';
 
   return (
     <SidebarProvider>
       <Sidebar>
         <SidebarHeader className="border-b">
-          <Link href="/" className="flex items-center gap-2 font-semibold">
+          <Link href={dashboardLink} className="flex items-center gap-2 font-semibold">
             <Wheat className="h-8 w-8 text-primary" />
             <span className="font-headline text-xl">Anna Seva Portal</span>
           </Link>
