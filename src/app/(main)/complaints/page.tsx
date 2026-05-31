@@ -1,4 +1,4 @@
-"use client";
+'use client';
 
 import { Card, CardHeader, CardTitle, CardContent, CardDescription } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -7,9 +7,15 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
-import { userComplaints } from "@/lib/data";
 import { useToast } from "@/hooks/use-toast";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+
+interface Complaint {
+  id: string;
+  subject: string;
+  date: string;
+  status: string;
+}
 
 export default function ComplaintsPage() {
   const { toast } = useToast();
@@ -17,6 +23,26 @@ export default function ComplaintsPage() {
   const [description, setDescription] = useState("");
   const [attachment, setAttachment] = useState<File | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [complaints, setComplaints] = useState<Complaint[]>([]);
+  const [loadingComplaints, setLoadingComplaints] = useState(true);
+
+  // Load complaints on component mount
+  useEffect(() => {
+    const loadComplaints = async () => {
+      try {
+        setLoadingComplaints(true);
+        // For now, we'll use an empty state since there's no complaints API yet
+        // In the future, this would fetch from /api/cardholder/complaints or similar
+        setComplaints([]);
+      } catch (error) {
+        console.error('Failed to load complaints:', error);
+      } finally {
+        setLoadingComplaints(false);
+      }
+    };
+
+    loadComplaints();
+  }, []);
 
   const handleSubmit = async () => {
     // Validate form fields
@@ -126,30 +152,38 @@ export default function ComplaintsPage() {
               <CardTitle>Your Complaint History</CardTitle>
             </CardHeader>
             <CardContent>
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>Complaint ID</TableHead>
-                    <TableHead>Subject</TableHead>
-                    <TableHead>Date</TableHead>
-                    <TableHead>Status</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {userComplaints.map((complaint) => (
-                    <TableRow key={complaint.id}>
-                      <TableCell className="font-medium">{complaint.id}</TableCell>
-                      <TableCell>{complaint.subject}</TableCell>
-                      <TableCell>{complaint.date}</TableCell>
-                      <TableCell>
-                        <Badge variant={complaint.status === 'Resolved' ? 'default' : 'secondary'}>
-                          {complaint.status}
-                        </Badge>
-                      </TableCell>
+              {loadingComplaints && (
+                <p className="text-sm text-muted-foreground">Loading complaint history...</p>
+              )}
+              {!loadingComplaints && complaints.length === 0 && (
+                <p className="text-sm text-muted-foreground">No complaints submitted yet. Your complaint history will appear here.</p>
+              )}
+              {!loadingComplaints && complaints.length > 0 && (
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>Complaint ID</TableHead>
+                      <TableHead>Subject</TableHead>
+                      <TableHead>Date</TableHead>
+                      <TableHead>Status</TableHead>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+                  </TableHeader>
+                  <TableBody>
+                    {complaints.map((complaint) => (
+                      <TableRow key={complaint.id}>
+                        <TableCell className="font-medium">{complaint.id}</TableCell>
+                        <TableCell>{complaint.subject}</TableCell>
+                        <TableCell>{complaint.date}</TableCell>
+                        <TableCell>
+                          <Badge variant={complaint.status === 'Resolved' ? 'default' : 'secondary'}>
+                            {complaint.status}
+                          </Badge>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              )}
             </CardContent>
           </Card>
         </div>
