@@ -12,6 +12,7 @@ import { ShoppingCart, Minus, Plus, Trash2, IndianRupee, Package } from 'lucide-
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { getProductImage, getProductPlaceholder } from '@/lib/product-images';
+import { generateUPIQRCodeUrl } from '@/lib/payment-config';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -139,7 +140,7 @@ export default function OrderPage() {
                         <IndianRupee className="w-16 h-16 text-primary"/>
                         <p className="text-2xl font-bold">Scan to Pay</p>
                         <div className="bg-white p-2 rounded-lg">
-                            <Image src="https://api.qrserver.com/v1/create-qr-code/?size=150x150&data=upi://pay?pa=example@upi" width={150} height={150} alt="QR Code" />
+                            <Image src={generateUPIQRCodeUrl(totalPrice)} width={150} height={150} alt="QR Code" />
                         </div>
                     </div>
                     <AlertDialogFooter>
