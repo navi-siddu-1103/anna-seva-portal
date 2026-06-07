@@ -3,11 +3,40 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { hashPassword, createToken } from '@/lib/auth';
 import { sendWelcomeEmail, sendWelcomeSMS } from '@/lib/notifications';
 
-// Simple geocoding mock - in production, this should use a real geocoding service
-function getCoordinatesFromAddress(address: string): { lat: number; lng: number } {
-  // For now, return default coordinates for Bangalore
-  // In a real implementation, you would call a geocoding API like Google Maps
-  return { lat: 12.9716, lng: 77.5946 };
+// Default Bangalore center coordinates as fallback
+const BANGALORE_CENTER = { lat: 12.9716, lng: 77.5946 };
+
+// Use Google Maps Geocoding API to get real coordinates from address
+async function getCoordinatesFromAddress(address: string): Promise<{ lat: number; lng: number }> {
+  if (!address || address.trim() === '') {
+    return BANGALORE_CENTER;
+  }
+
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  if (!apiKey) {
+    console.warn('Google Maps API key not set, using default Bangalore coordinates');
+    return BANGALORE_CENTER;
+  }
+
+  try {
+    const encodedAddress = encodeURIComponent(address);
+    const url = `https://maps.googleapis.com/maps/api/geocode/json?address=${encodedAddress}&key=${apiKey}`;
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    if (data.status === 'OK' && data.results && data.results.length > 0) {
+      const location = data.results[0].geometry.location;
+      console.log(`Geocoded "${address}" → lat:${location.lat}, lng:${location.lng}`);
+      return { lat: location.lat, lng: location.lng };
+    } else {
+      console.warn(`Geocoding failed for address "${address}": ${data.status}. Using Bangalore default.`);
+      return BANGALORE_CENTER;
+    }
+  } catch (error) {
+    console.error('Geocoding API error:', error);
+    return BANGALORE_CENTER;
+  }
 }
 
 export async function POST(request: Request) {
@@ -80,14 +109,15 @@ export async function POST(request: Request) {
       };
       await distributors.insertOne(distributorDoc);
 
-      // Create FPS record for the distributor
+      // Create FPS record with REAL geocoded coordinates from the shop address
       const fps = db.collection('fps');
-      const { lat, lng } = getCoordinatesFromAddress(address || '');
+      const { lat, lng } = await getCoordinatesFromAddress(address || '');
+
       const fpsDoc = {
         distributorId: result.insertedId,
-        name: shopName || '',
+        name: shopName || `${name}'s FPS Shop`,
         shopkeeper: name,
-        hours: '9 AM - 6 PM', // Default hours
+        hours: '9 AM - 6 PM',
         address: address || '',
         lat,
         lng,
@@ -104,7 +134,6 @@ export async function POST(request: Request) {
         await sendWelcomeSMS(phone, name, role || 'cardholder');
       }
     } catch (notificationError) {
-      // Log but don't fail registration if notification fails
       console.error('Failed to send welcome notifications:', notificationError);
     }
 

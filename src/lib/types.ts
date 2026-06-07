@@ -19,6 +19,7 @@ export type FPS = {
   stockStatus: 'Available' | 'Limited' | 'Out of Stock';
   lat: number;
   lng: number;
+  address?: string;
 };
 
 export type Complaint = {

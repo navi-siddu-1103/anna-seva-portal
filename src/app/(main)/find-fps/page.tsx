@@ -3,37 +3,40 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { User, Clock, Package, MapPin, Loader2 } from 'lucide-react';
+import { User, Clock, Package, MapPin, Loader2, Info } from 'lucide-react';
 import { GoogleMapsComponent } from '@/components/shared/google-map';
 import type { FPS } from '@/lib/types';
+import { fpsLocations as staticFpsLocations } from '@/lib/data';
 
 export default function FindFpsPage() {
   const [fpsLocations, setFpsLocations] = useState<FPS[]>([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+  const [usingStaticData, setUsingStaticData] = useState(false);
 
   useEffect(() => {
     const fetchFpsLocations = async () => {
       try {
         setLoading(true);
         const response = await fetch('/api/fps/list');
-        
+
         if (!response.ok) {
-          throw new Error('Failed to fetch FPS locations');
+          throw new Error('API error');
         }
-        
+
         const data = await response.json();
-        if (data.success) {
+        if (data.success && data.data && data.data.length > 0) {
           setFpsLocations(data.data);
-          setError(null);
+          setUsingStaticData(false);
         } else {
-          throw new Error('Failed to fetch FPS locations');
+          // API returned empty — show static demo shops
+          setFpsLocations(staticFpsLocations);
+          setUsingStaticData(true);
         }
       } catch (err: any) {
         console.error('Error fetching FPS locations:', err);
-        setError(err.message || 'Failed to load FPS locations');
-        // Fall back to empty array if fetch fails
-        setFpsLocations([]);
+        // Fall back to static demo data on any error
+        setFpsLocations(staticFpsLocations);
+        setUsingStaticData(true);
       } finally {
         setLoading(false);
       }
@@ -42,27 +45,23 @@ export default function FindFpsPage() {
     fetchFpsLocations();
   }, []);
 
-  if (error && fpsLocations.length === 0) {
-    return (
-      <div className="container mx-auto p-4 md:p-8">
-        <h1 className="text-3xl font-bold font-headline mb-8">Find a Fair Price Shop (FPS)</h1>
-        <Card className="border-red-200 bg-red-50">
-          <CardContent className="pt-6">
-            <p className="text-red-600">{error}</p>
-          </CardContent>
-        </Card>
-      </div>
-    );
-  }
-
   return (
     <div className="container mx-auto p-4 md:p-8">
       <h1 className="text-3xl font-bold font-headline mb-8">Find a Fair Price Shop (FPS)</h1>
+
+      {usingStaticData && (
+        <div className="flex items-center gap-2 mb-4 p-3 rounded-lg bg-blue-50 border border-blue-200 text-blue-700 text-sm">
+          <Info className="w-4 h-4 shrink-0" />
+          <span>Showing demo shop locations. Register as a distributor to add your real shop.</span>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+        {/* Map */}
         <div className="lg:col-span-2">
           <Card className="overflow-hidden">
             <CardHeader>
-              <CardTitle>Nearby FPS Locations</CardTitle>
+              <CardTitle>Nearby FPS Locations ({fpsLocations.length} shops)</CardTitle>
             </CardHeader>
             <CardContent>
               <div className="relative h-[500px] w-full rounded-lg overflow-hidden">
@@ -77,12 +76,14 @@ export default function FindFpsPage() {
             </CardContent>
           </Card>
         </div>
+
+        {/* Shop List */}
         <div className="lg:col-span-1">
-          <Card>
+          <Card className="h-full">
             <CardHeader>
               <CardTitle>Shop List</CardTitle>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4 overflow-y-auto max-h-[540px]">
               {loading ? (
                 <div className="flex items-center justify-center py-8">
                   <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
@@ -91,23 +92,41 @@ export default function FindFpsPage() {
                 <p className="text-muted-foreground text-sm">No FPS shops available</p>
               ) : (
                 fpsLocations.map((fps) => (
-                  <div key={fps.id} className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors">
+                  <div
+                    key={fps.id}
+                    className="p-4 border rounded-lg hover:bg-muted/50 cursor-pointer transition-colors"
+                  >
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
+                        {/* Shop Name */}
                         <h3 className="font-semibold flex items-center gap-2">
-                          <MapPin className="w-4 h-4 text-primary" />
+                          <MapPin className="w-4 h-4 text-primary shrink-0" />
                           {fps.name}
                         </h3>
+
+                        {/* Shopkeeper */}
                         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                          <User className="w-3 h-3" />
+                          <User className="w-3 h-3 shrink-0" />
                           {fps.shopkeeper}
                         </p>
+
+                        {/* Hours */}
                         <p className="text-sm text-muted-foreground mt-1 flex items-center gap-2">
-                          <Clock className="w-3 h-3" />
+                          <Clock className="w-3 h-3 shrink-0" />
                           {fps.hours}
                         </p>
+
+                        {/* Address (shown when available from registered distributor) */}
+                        {fps.address && (
+                          <p className="text-xs text-muted-foreground mt-1 flex items-start gap-2">
+                            <MapPin className="w-3 h-3 shrink-0 mt-0.5" />
+                            <span>{fps.address}</span>
+                          </p>
+                        )}
                       </div>
                     </div>
+
+                    {/* Stock Status Badge */}
                     <div className="flex items-center gap-2 mt-3">
                       <Package className="w-4 h-4" />
                       <Badge

@@ -1,10 +1,10 @@
 "use client";
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { GoogleMap, useJsApiLoader, Marker, InfoWindow } from '@react-google-maps/api';
 import type { FPS } from '@/lib/types';
 import { Badge } from '@/components/ui/badge';
-import { User, Clock, Package, Navigation } from 'lucide-react';
+import { User, Clock, Package, Navigation, MapPin, AlertTriangle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const containerStyle = {
@@ -12,7 +12,6 @@ const containerStyle = {
   height: '100%',
 };
 
-// Default center (Bangalore coordinates as fallback)
 const defaultCenter = {
   lat: 12.9716,
   lng: 77.5946,
@@ -22,12 +21,31 @@ interface GoogleMapsProps {
   locations: FPS[];
 }
 
+// Extend Window type for Google Maps auth failure callback
+declare global {
+  interface Window {
+    gm_authFailure?: () => void;
+  }
+}
+
 export function GoogleMapsComponent({ locations }: GoogleMapsProps) {
   const [selectedLocation, setSelectedLocation] = useState<FPS | null>(null);
   const [map, setMap] = useState<google.maps.Map | null>(null);
+  const [authError, setAuthError] = useState<string | null>(null);
 
-  // Use environment variable for API key
   const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY || '';
+
+  // Detect RefererNotAllowedMapError and other auth failures from Google Maps
+  useEffect(() => {
+    window.gm_authFailure = () => {
+      const currentUrl = window.location.origin;
+      setAuthError(currentUrl);
+      console.error('Google Maps auth failure: RefererNotAllowedMapError for', currentUrl);
+    };
+    return () => {
+      delete window.gm_authFailure;
+    };
+  }, []);
 
   const { isLoaded, loadError } = useJsApiLoader({
     id: 'google-map-script',
@@ -35,12 +53,17 @@ export function GoogleMapsComponent({ locations }: GoogleMapsProps) {
   });
 
   const onLoad = useCallback((map: google.maps.Map) => {
-    // Calculate bounds to fit all markers
-    const bounds = new window.google.maps.LatLngBounds();
-    locations.forEach((location) => {
-      bounds.extend({ lat: location.lat, lng: location.lng });
-    });
-    map.fitBounds(bounds);
+    if (locations.length > 0) {
+      const bounds = new window.google.maps.LatLngBounds();
+      locations.forEach((location) => {
+        bounds.extend({ lat: location.lat, lng: location.lng });
+      });
+      map.fitBounds(bounds);
+      const listener = window.google.maps.event.addListener(map, 'idle', () => {
+        if (map.getZoom()! > 15) map.setZoom(15);
+        window.google.maps.event.removeListener(listener);
+      });
+    }
     setMap(map);
   }, [locations]);
 
@@ -49,52 +72,70 @@ export function GoogleMapsComponent({ locations }: GoogleMapsProps) {
   }, []);
 
   const getMarkerIcon = (stockStatus: string) => {
-    // Different colors for different stock statuses
-    if (stockStatus === 'Available') {
-      return 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
-    } else if (stockStatus === 'Limited') {
-      return 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png';
-    } else {
-      return 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
-    }
+    if (stockStatus === 'Available') return 'http://maps.google.com/mapfiles/ms/icons/green-dot.png';
+    if (stockStatus === 'Limited') return 'http://maps.google.com/mapfiles/ms/icons/yellow-dot.png';
+    return 'http://maps.google.com/mapfiles/ms/icons/red-dot.png';
   };
 
   const openDirections = (lat: number, lng: number) => {
-    const url = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
-    window.open(url, '_blank');
+    window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
   };
 
+  // No API key configured
+  if (!apiKey) {
+    return (
+      <div className="flex items-center justify-center h-full bg-muted rounded-lg p-8">
+        <div className="text-center max-w-md">
+          <AlertTriangle className="w-10 h-10 text-yellow-500 mx-auto mb-3" />
+          <p className="text-lg font-semibold mb-2">Map not configured</p>
+          <p className="text-sm text-muted-foreground">
+            Add <code className="bg-muted-foreground/20 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to your environment variables.
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  // RefererNotAllowedMapError — API key has HTTP referrer restrictions
+  if (authError) {
+    return (
+      <div className="flex items-center justify-center h-full bg-muted rounded-lg p-6">
+        <div className="text-center max-w-md w-full">
+          <AlertTriangle className="w-10 h-10 text-yellow-500 mx-auto mb-3" />
+          <p className="text-base font-semibold mb-1 text-destructive">Google Maps: Domain Not Authorized</p>
+          <p className="text-sm text-muted-foreground mb-4">
+            Your API key doesn't allow requests from <code className="bg-muted px-1 rounded text-xs">{authError}</code>
+          </p>
+          <div className="bg-amber-50 border border-amber-200 rounded-lg p-4 text-left text-xs space-y-1">
+            <p className="font-semibold text-amber-800 mb-2">🔑 Fix in Google Cloud Console:</p>
+            <ol className="list-decimal ml-4 space-y-1 text-amber-700">
+              <li>Go to <strong>console.cloud.google.com → APIs &amp; Services → Credentials</strong></li>
+              <li>Click your <strong>Maps JavaScript API key</strong></li>
+              <li>Under <strong>"Application restrictions"</strong>, select <strong>HTTP referrers</strong></li>
+              <li>Add these allowed referrers:
+                <ul className="list-disc ml-4 mt-1 space-y-0.5 font-mono text-[10px]">
+                  <li>http://localhost:9002/*</li>
+                  <li>https://anna-seva-portal-1088251282829.asia-south1.run.app/*</li>
+                </ul>
+              </li>
+              <li>Click <strong>Save</strong> and refresh this page</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  // Script failed to load entirely (network / billing issue)
   if (loadError) {
     return (
       <div className="flex items-center justify-center h-full bg-muted rounded-lg p-8">
         <div className="text-center max-w-md">
-          <p className="text-lg font-semibold mb-2 text-destructive">Unable to load map</p>
-          <p className="text-sm text-muted-foreground mb-4">
-            {apiKey 
-              ? 'Google Maps requires billing to be enabled in Google Cloud Console.' 
-              : 'Google Maps API key is not configured.'}
+          <AlertTriangle className="w-10 h-10 text-red-500 mx-auto mb-3" />
+          <p className="text-lg font-semibold mb-2 text-destructive">Unable to load Google Maps</p>
+          <p className="text-sm text-muted-foreground">
+            Ensure the <strong>Maps JavaScript API</strong> is enabled in Google Cloud Console and billing is active.
           </p>
-          {apiKey && (
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 text-left text-xs">
-              <p className="font-semibold mb-2">💳 Billing Not Enabled</p>
-              <p className="mb-2">Google Maps requires a billing account (first $200/month is FREE).</p>
-              <p className="mb-2"><strong>To fix:</strong></p>
-              <ol className="list-decimal ml-4 space-y-1">
-                <li>Go to Google Cloud Console</li>
-                <li>Enable billing for your project</li>
-                <li>Link your billing account</li>
-                <li>Refresh this page</li>
-              </ol>
-              <p className="mt-2 text-blue-600">
-                See <strong>GOOGLE_MAPS_BILLING.md</strong> for detailed instructions
-              </p>
-            </div>
-          )}
-          {!apiKey && (
-            <p className="text-xs text-muted-foreground mt-4">
-              Add NEXT_PUBLIC_GOOGLE_MAPS_API_KEY to your .env.local file
-            </p>
-          )}
         </div>
       </div>
     );
@@ -103,8 +144,9 @@ export function GoogleMapsComponent({ locations }: GoogleMapsProps) {
   if (!isLoaded) {
     return (
       <div className="flex items-center justify-center h-full bg-muted rounded-lg">
-        <div className="animate-pulse">
-          <p className="text-lg font-semibold">Loading map...</p>
+        <div className="flex flex-col items-center gap-3">
+          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
+          <p className="text-sm text-muted-foreground">Loading map...</p>
         </div>
       </div>
     );
@@ -122,6 +164,7 @@ export function GoogleMapsComponent({ locations }: GoogleMapsProps) {
         mapTypeControl: true,
         fullscreenControl: true,
         zoomControl: true,
+        gestureHandling: 'cooperative',
       }}
     >
       {locations.map((location) => (
@@ -150,6 +193,12 @@ export function GoogleMapsComponent({ locations }: GoogleMapsProps) {
                 <Clock className="w-4 h-4" />
                 {selectedLocation.hours}
               </p>
+              {selectedLocation.address && (
+                <p className="flex items-start gap-2 text-xs text-gray-600">
+                  <MapPin className="w-3 h-3 mt-0.5 shrink-0" />
+                  <span>{selectedLocation.address}</span>
+                </p>
+              )}
               <div className="flex items-center gap-2">
                 <Package className="w-4 h-4" />
                 <Badge
