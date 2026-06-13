@@ -83,6 +83,9 @@ function GoogleMapInner({
     [locations],
   );
 
+  // Must be defined at top level — NOT inside JSX
+  const onUnmount = useCallback(() => {}, []);
+
   const openDirections = (lat: number, lng: number) =>
     window.open(`https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`, '_blank');
 
@@ -129,7 +132,7 @@ function GoogleMapInner({
       center={defaultCenter}
       zoom={12}
       onLoad={onLoad}
-      onUnmount={useCallback(() => {}, [])}
+      onUnmount={onUnmount}
       options={{ streetViewControl: true, mapTypeControl: true, fullscreenControl: true, zoomControl: true, gestureHandling: 'cooperative' }}
     >
       {locations.map((loc) => (
