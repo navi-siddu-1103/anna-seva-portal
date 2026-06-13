@@ -8,9 +8,10 @@ import type { Product } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
-import { ShoppingCart, Minus, Plus, Trash2, IndianRupee, Package } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Trash2, IndianRupee, Package, CheckCircle2 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
+import { useToast } from '@/hooks/use-toast';
 import { getProductImage, getProductPlaceholder } from '@/lib/product-images';
 import {
   AlertDialog,
@@ -31,6 +32,7 @@ type CartItem = {
 
 export default function OrderPage() {
   const [cart, setCart] = useState<CartItem[]>([]);
+  const { toast } = useToast();
 
   const addToCart = (product: Product) => {
     setCart((prevCart) => {
@@ -41,6 +43,12 @@ export default function OrderPage() {
         );
       }
       return [...prevCart, { product, quantity: 1 }];
+    });
+    // Show "Added to cart" popup for 2 seconds
+    toast({
+      title: '✅ Added to Cart!',
+      description: `${product.name} has been added to your cart.`,
+      duration: 2000,
     });
   };
 

@@ -17,6 +17,7 @@ import {
 } from 'lucide-react';
 import type { NavItem } from '@/lib/types';
 import { buttonVariants } from '../ui/button';
+import { useSidebar } from '../ui/sidebar';
 
 const userNavItems: NavItem[] = [
   { href: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, tooltip: 'Dashboard' },
@@ -38,6 +39,14 @@ const distributorNavItems: NavItem[] = [
 export default function SidebarNav({ role }: { role: 'user' | 'distributor' }) {
   const pathname = usePathname();
   const navItems = role === 'user' ? userNavItems : distributorNavItems;
+  const { isMobile, setOpenMobile } = useSidebar();
+
+  const handleNavClick = () => {
+    // Close the sidebar sheet on mobile after navigating
+    if (isMobile) {
+      setOpenMobile(false);
+    }
+  };
 
   return (
     <nav className="flex flex-col gap-2 p-4">
@@ -47,6 +56,7 @@ export default function SidebarNav({ role }: { role: 'user' | 'distributor' }) {
           <Link
             key={item.href}
             href={item.href}
+            onClick={handleNavClick}
             className={cn(
               buttonVariants({ variant: isActive ? 'default' : 'ghost', size: 'default' }),
               'justify-start gap-3',
