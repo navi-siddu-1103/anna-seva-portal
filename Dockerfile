@@ -4,10 +4,13 @@ WORKDIR /app
 
 COPY package*.json ./
 
-RUN npm install
+# Install deps (use --legacy-peer-deps for compatibility)
+RUN npm install --legacy-peer-deps
 
 COPY . .
 
+# Set memory limit AND disable telemetry BEFORE build
+ENV NODE_OPTIONS=--max-old-space-size=1800
 ENV NEXT_TELEMETRY_DISABLED=1
 
 RUN npm run build

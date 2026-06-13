@@ -8,7 +8,7 @@ import type { Product } from '@/lib/types';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger, SheetFooter, SheetClose } from '@/components/ui/sheet';
-import { ShoppingCart, Minus, Plus, Trash2, IndianRupee, Package, CheckCircle2 } from 'lucide-react';
+import { ShoppingCart, Minus, Plus, Trash2, IndianRupee, Package } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
 import { Separator } from '@/components/ui/separator';
 import { useToast } from '@/hooks/use-toast';
