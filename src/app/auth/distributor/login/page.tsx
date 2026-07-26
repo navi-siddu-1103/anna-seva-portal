@@ -9,6 +9,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/com
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { BuildingIcon, ArrowLeft } from 'lucide-react';
+import { GoogleSignInButton } from '@/components/shared/google-sign-in-button';
 
 export default function DistributorLoginPage() {
   const router = useRouter();
@@ -111,7 +112,20 @@ export default function DistributorLoginPage() {
             </Button>
           </form>
 
-          <div className="mt-6 text-center">
+          {/* Divider */}
+          <div className="relative my-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-muted" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-3 text-muted-foreground font-medium">or continue with</span>
+            </div>
+          </div>
+
+          {/* Google Sign-In */}
+          <GoogleSignInButton role="distributor" redirectTo="/distributor" />
+
+          <div className="mt-4 text-center">
             <p className="text-sm text-muted-foreground">
               Don't have an account?{' '}
               <Link href="/auth/distributor/register" className="text-primary font-semibold hover:underline">

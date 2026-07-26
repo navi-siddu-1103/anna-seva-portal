@@ -2,7 +2,7 @@ import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { verifyToken } from './lib/auth';
 
-const PUBLIC_PATHS = ['/', '/login', '/auth', '/api/auth', '/api/auth/login', '/api/auth/register', '/find-fps'];
+const PUBLIC_PATHS = ['/', '/login', '/auth', '/api/auth', '/api/auth/login', '/api/auth/register', '/api/auth/google', '/api/auth/forgot-password', '/api/auth/reset-password', '/api/config', '/find-fps'];
 
 export function middleware(req: NextRequest) {
   const { pathname } = req.nextUrl;
