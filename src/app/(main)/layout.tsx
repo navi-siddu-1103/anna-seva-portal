@@ -2,6 +2,7 @@
 'use client';
 import { usePathname } from 'next/navigation';
 import Link from 'next/link';
+import Image from 'next/image';
 import { Wheat, User } from 'lucide-react';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
@@ -29,7 +30,13 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         <SidebarHeader className="border-b">
           <Link href={dashboardLink} className="flex items-center gap-2 font-semibold">
             <Wheat className="h-8 w-8 text-primary" />
-            <span className="font-headline text-xl">Anna Seva Portal</span>
+            <Image
+              src="/anna-seva-portal-logo.png"
+              alt="Anna Seva Portal"
+              width={220}
+              height={44}
+              className="h-8 w-auto"
+            />
           </Link>
         </SidebarHeader>
         <SidebarContent>

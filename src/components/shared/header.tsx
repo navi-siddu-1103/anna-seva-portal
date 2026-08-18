@@ -13,6 +13,7 @@ import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Globe, LogOut, User, ChevronDown, Menu } from 'lucide-react';
 import Link from 'next/link';
+import Image from 'next/image';
 import { usePathname } from 'next/navigation';
 import { Sheet, SheetContent, SheetTrigger } from '../ui/sheet';
 import SidebarNav from './sidebar-nav';
@@ -47,7 +48,13 @@ export default function Header() {
             <div className="flex h-16 items-center border-b px-4">
               <Link href={dashboardLink} className="flex items-center gap-2 font-semibold">
                 <WheatIcon className="h-6 w-6 text-primary" />
-                <span className="font-headline text-lg">Anna Seva Portal</span>
+                <Image
+                  src="/anna-seva-portal-logo.png"
+                  alt="Anna Seva Portal"
+                  width={180}
+                  height={40}
+                  className="h-8 w-auto"
+                />
               </Link>
             </div>
             <div className="flex-1 overflow-y-auto">
