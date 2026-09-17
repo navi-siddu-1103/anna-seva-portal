@@ -19,11 +19,7 @@ export async function POST(request: Request) {
     }
 
     const body = await request.json();
-    const { items, distributorId, collectionDate } = body;
-
-    if (!items || !Array.isArray(items) || items.length === 0) {
-      return NextResponse.json({ error: 'Items are required' }, { status: 400 });
-    }
+    const { items, distributorId, collectionDate, timeSlot } = body;
 
     if (!distributorId) {
       return NextResponse.json({ error: 'Distributor/Shop is required' }, { status: 400 });
@@ -63,12 +59,13 @@ export async function POST(request: Request) {
       distributorId: distributor._id,
       distributorName: distributor.shopName,
       distributorAddress: distributor.address,
-      items: items.map((item: any) => ({
+      items: (items && Array.isArray(items) ? items : []).map((item: any) => ({
         productId: item.productId,
         productName: item.productName,
         quantity: item.quantity,
       })),
       collectionDate: collectionDate ? new Date(collectionDate) : new Date(),
+      timeSlot: timeSlot ?? null,
       bookingDate: new Date(),
       status: 'booked', // booked, collected, cancelled
       createdAt: new Date(),

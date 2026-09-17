@@ -44,12 +44,21 @@ export async function GET(request: Request) {
 
     const { client } = await connectToDatabase();
     const db = client.db();
+
+    // Resolve distributor _id from the logged-in user's userId
+    const distributors = db.collection('distributors');
+    const distributor = await distributors.findOne({ userId: new ObjectId(decoded.userId) });
+
+    if (!distributor) {
+      return NextResponse.json({ error: 'Distributor profile not found' }, { status: 404 });
+    }
+
     const tokens = db.collection('tokens');
 
     // Get all tokens for this date and distributor
     const tokensForDate = await tokens
       .find({
-        distributorId: new ObjectId(decoded.userId),
+        distributorId: distributor._id,
         collectionDate: {
           $gte: startOfDay,
           $lt: endOfDay
@@ -63,12 +72,15 @@ export async function GET(request: Request) {
       slotData[slot] = 0;
     });
 
-    // Count bookings for each slot
-    // For now, distribute tokens evenly across slots or use a default booking time
-    // In a real scenario, tokens would have a specific time slot field
-    tokensForDate.forEach((token) => {
-      // Assign to the first available slot (in production, tokens would have a slot field)
-      slotData["09:00 AM - 10:00 AM"] += 1;
+    // Count bookings per time slot
+    tokensForDate.forEach((tok) => {
+      const slot = tok.timeSlot;
+      if (slot && slotData[slot] !== undefined) {
+        slotData[slot] += 1;
+      } else {
+        // Fallback: tokens without a timeSlot go to the first slot
+        slotData[TIME_SLOTS[0]] += 1;
+      }
     });
 
     // Format response
