@@ -23,30 +23,42 @@ export async function POST(request: Request) {
     const resetRecord = await passwordResets.findOne({ token });
 
     if (!resetRecord) {
-      return NextResponse.json({ error: 'Invalid or expired reset link. Please request a new one.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Invalid or expired reset link. Please request a new one.' },
+        { status: 400 }
+      );
     }
 
     // Check expiry
     if (new Date() > new Date(resetRecord.expiresAt)) {
       await passwordResets.deleteOne({ token });
-      return NextResponse.json({ error: 'Reset link has expired. Please request a new one.' }, { status: 400 });
+      return NextResponse.json(
+        { error: 'Reset link has expired. Please request a new one.' },
+        { status: 400 }
+      );
     }
+
+    // Normalize email (forgot-password stores it lowercased)
+    const email = resetRecord.email.toLowerCase();
 
     // Hash new password
     const hashed = await hashPassword(password);
 
-    // Update user password
+    // Update password in users collection (case-insensitive email match)
     const result = await users.updateOne(
-      { email: resetRecord.email },
+      { email: { $regex: new RegExp(`^${email}$`, 'i') } },
       { $set: { password: hashed, updatedAt: new Date() } }
     );
 
     if (result.matchedCount === 0) {
+      console.error(`[reset-password] No user found with email: ${email}`);
       return NextResponse.json({ error: 'User not found' }, { status: 404 });
     }
 
     // Delete the used token
     await passwordResets.deleteOne({ token });
+
+    console.log(`[reset-password] Password successfully reset for: ${email}`);
 
     return NextResponse.json({ ok: true, message: 'Password has been reset successfully.' });
   } catch (err) {
@@ -54,3 +66,4 @@ export async function POST(request: Request) {
     return NextResponse.json({ error: 'Internal Server Error' }, { status: 500 });
   }
 }
+

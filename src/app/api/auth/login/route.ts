@@ -13,7 +13,8 @@ export async function POST(request: Request) {
     const db = client.db();
     const users = db.collection('users');
 
-    const user = await users.findOne({ email });
+    // Case-insensitive email lookup to handle any casing inconsistencies
+    const user = await users.findOne({ email: { $regex: new RegExp(`^${email.trim()}$`, 'i') } });
     if (!user) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
     }
