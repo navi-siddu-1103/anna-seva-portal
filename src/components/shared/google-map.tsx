@@ -109,13 +109,14 @@ function GoogleMapInner({
             <p className="font-semibold text-amber-800 mb-2">🔑 Fix in Google Cloud Console:</p>
             <ol className="list-decimal ml-4 space-y-1 text-amber-700">
               <li>APIs &amp; Services → Credentials → Edit Maps API key</li>
-              <li>Add HTTP referrers:
+              <li>Under <strong>Website restrictions</strong>, add:
                 <ul className="list-disc ml-4 mt-1 font-mono text-[10px]">
+                  <li>{authError}/*</li>
                   <li>http://localhost:9002/*</li>
-                  <li>https://anna-seva-portal-1088251282829.asia-south1.run.app/*</li>
                 </ul>
               </li>
-              <li>Save &amp; refresh this page</li>
+              <li>Make sure each entry ends with <strong>/*</strong></li>
+              <li>Save &amp; wait ~5 minutes, then refresh</li>
             </ol>
           </div>
         </div>
@@ -204,7 +205,7 @@ export function GoogleMapsComponent({ locations }: GoogleMapsProps) {
         message={
           <>
             Add <code className="bg-muted-foreground/20 px-1 rounded">NEXT_PUBLIC_GOOGLE_MAPS_API_KEY</code> to
-            your Cloud Run environment variables and redeploy.
+            your environment variables (Vercel dashboard) and redeploy.
           </>
         }
       />
