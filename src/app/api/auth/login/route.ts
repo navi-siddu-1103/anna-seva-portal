@@ -4,7 +4,7 @@ import { verifyPassword, createToken } from '@/lib/auth';
 
 export async function POST(request: Request) {
   try {
-    const { email, password } = await request.json();
+    const { email, password, role } = await request.json();
     if (!email || !password) {
       return NextResponse.json({ error: 'Email and password are required' }, { status: 400 });
     }
@@ -22,6 +22,11 @@ export async function POST(request: Request) {
     const ok = await verifyPassword(password, user.password);
     if (!ok) {
       return NextResponse.json({ error: 'Invalid credentials' }, { status: 401 });
+    }
+
+    // If a role was specified (e.g. 'distributor'), allow admin to also pass through
+    if (role && user.role !== role && user.role !== 'admin') {
+      return NextResponse.json({ error: 'Invalid credentials for this login page' }, { status: 403 });
     }
 
     const token = createToken({ userId: user._id.toString(), email: user.email, role: user.role || 'cardholder' });

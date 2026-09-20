@@ -5,16 +5,21 @@ export async function GET(request: Request) {
   try {
     const { client } = await connectToDatabase();
     const db = client.db();
-    const fps = db.collection('fps');
 
-    // Fetch all active FPS shops, sorted by creation date (newest first)
-    const fpsList = await fps
-      .find({})
-      .project({ distributorId: 0 }) // Exclude internal IDs
+    // Get active distributor IDs first
+    const activeDistributors = await db.collection('distributors')
+      .find({ status: 'active' })
+      .project({ _id: 1 })
+      .toArray();
+    const activeIds = activeDistributors.map(d => d._id);
+
+    // Fetch FPS shops only for active distributors
+    const fpsList = await db.collection('fps')
+      .find({ distributorId: { $in: activeIds } })
+      .project({ distributorId: 0 })
       .sort({ createdAt: -1 })
       .toArray();
 
-    // Transform data to match FPS type used by frontend
     const transformedList = fpsList.map((shop: any) => ({
       id: shop._id.toString(),
       name: shop.name,
@@ -23,13 +28,13 @@ export async function GET(request: Request) {
       stockStatus: shop.stockStatus,
       lat: shop.lat,
       lng: shop.lng,
-      address: shop.address
+      address: shop.address,
     }));
 
-    return NextResponse.json({ 
-      success: true, 
+    return NextResponse.json({
+      success: true,
       data: transformedList,
-      count: transformedList.length
+      count: transformedList.length,
     });
   } catch (err) {
     console.error('Get FPS list error:', err);

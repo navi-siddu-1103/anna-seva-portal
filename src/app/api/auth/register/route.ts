@@ -103,7 +103,7 @@ export async function POST(request: Request) {
         phone: phone || '',
         address: address || '',
         createdAt: new Date(),
-        status: 'active',
+        status: 'pending', // requires admin approval before going live
         rating: 0,
         totalOrders: 0
       };

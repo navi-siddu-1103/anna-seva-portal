@@ -3,21 +3,10 @@ import { connectToDatabase } from '@/lib/mongodb';
 import { verifyToken } from '@/lib/auth';
 import { ObjectId } from 'mongodb';
 
-// Simple geocoding mock - in production, this should use a real geocoding service
-function getCoordinatesFromAddress(address: string): { lat: number; lng: number } {
-  // For now, return default coordinates for Bangalore
-  // In a real implementation, you would call a geocoding API like Google Maps
-  return { lat: 12.9716, lng: 77.5946 };
-}
-
 export async function GET(request: Request) {
   try {
-    // Get token from cookies
     const token = request.headers.get('cookie')?.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-    
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const decoded = verifyToken(token);
     if (!decoded || decoded.role !== 'distributor') {
@@ -26,20 +15,22 @@ export async function GET(request: Request) {
 
     const { client } = await connectToDatabase();
     const db = client.db();
-    const distributors = db.collection('distributors');
 
-    const distributor = await distributors.findOne({ userId: new ObjectId(decoded.userId) });
-    
-    if (!distributor) {
-      return NextResponse.json({ error: 'Distributor not found' }, { status: 404 });
-    }
+    const distributor = await db.collection('distributors').findOne({ userId: new ObjectId(decoded.userId) });
+    if (!distributor) return NextResponse.json({ error: 'Distributor not found' }, { status: 404 });
 
-    // Remove sensitive fields
+    // Check for any pending change request
+    const pendingRequest = await db.collection('distributorChangeRequests').findOne({
+      distributorId: distributor._id.toString(),
+      status: 'pending',
+    });
+
     const { _id, ...distributorData } = distributor;
 
-    return NextResponse.json({ 
-      success: true, 
-      data: distributorData 
+    return NextResponse.json({
+      success: true,
+      data: distributorData,
+      pendingChangeRequest: pendingRequest ?? null,
     });
   } catch (err) {
     console.error('Get distributor profile error:', err);
@@ -50,10 +41,7 @@ export async function GET(request: Request) {
 export async function PUT(request: Request) {
   try {
     const token = request.headers.get('cookie')?.split('; ').find(row => row.startsWith('token='))?.split('=')[1];
-    
-    if (!token) {
-      return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    if (!token) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 });
 
     const decoded = verifyToken(token);
     if (!decoded || decoded.role !== 'distributor') {
@@ -65,74 +53,64 @@ export async function PUT(request: Request) {
 
     const { client } = await connectToDatabase();
     const db = client.db();
-    const distributors = db.collection('distributors');
-    const fps = db.collection('fps');
 
-    const updateDoc: any = {
-      updatedAt: new Date()
-    };
+    const distributor = await db.collection('distributors').findOne({ userId: new ObjectId(decoded.userId) });
+    if (!distributor) return NextResponse.json({ error: 'Distributor not found' }, { status: 404 });
 
-    if (ownerName) updateDoc.ownerName = ownerName;
-    if (shopName) updateDoc.shopName = shopName;
-    if (phone) updateDoc.phone = phone;
-    if (address) updateDoc.address = address;
-    if (licenseNumber) updateDoc.licenseNumber = licenseNumber;
-
-    const distributorId = new ObjectId(decoded.userId);
-    
-    await distributors.updateOne(
-      { userId: distributorId },
-      { $set: updateDoc }
-    );
-
-    // Also update FPS record if address or shop name changed
-    const fpsUpdateDoc: any = {
-      updatedAt: new Date()
-    };
-
-    if (shopName) fpsUpdateDoc.name = shopName;
-    if (ownerName) fpsUpdateDoc.shopkeeper = ownerName;
-    if (address) {
-      fpsUpdateDoc.address = address;
-      const { lat, lng } = getCoordinatesFromAddress(address);
-      fpsUpdateDoc.lat = lat;
-      fpsUpdateDoc.lng = lng;
+    // Check if a pending change request already exists
+    const existingPending = await db.collection('distributorChangeRequests').findOne({
+      distributorId: distributor._id.toString(),
+      status: 'pending',
+    });
+    if (existingPending) {
+      return NextResponse.json(
+        { error: 'You already have a pending change request. Please wait for admin review.' },
+        { status: 400 }
+      );
     }
 
-    // Update FPS record - using explicit field reference instead of shorthand
-    const fpsUpdateResult = await fps.updateOne(
-      { distributorId: distributorId },
-      { $set: fpsUpdateDoc }
-    );
+    // Build the requested changes (only include changed fields)
+    const requestedChanges: Record<string, string> = {};
+    const currentValues: Record<string, string> = {};
 
-    // If FPS record was not found, create it (fallback for migration cases)
-    if (fpsUpdateResult.matchedCount === 0) {
-      const { lat, lng } = getCoordinatesFromAddress(address || '');
-      const fpsDoc = {
-        distributorId: distributorId,
-        name: shopName || '',
-        shopkeeper: ownerName || '',
-        hours: '9 AM - 6 PM',
-        address: address || '',
-        lat,
-        lng,
-        stockStatus: 'Available',
-        createdAt: new Date(),
-        updatedAt: new Date()
-      };
-      try {
-        await fps.insertOne(fpsDoc);
-      } catch (insertErr: any) {
-        // If insert fails due to duplicate, it's okay - just log it
-        if (insertErr.code !== 11000) {
-          throw insertErr;
-        }
-      }
+    if (ownerName && ownerName !== distributor.ownerName) {
+      requestedChanges.ownerName = ownerName;
+      currentValues.ownerName = distributor.ownerName;
+    }
+    if (shopName && shopName !== distributor.shopName) {
+      requestedChanges.shopName = shopName;
+      currentValues.shopName = distributor.shopName;
+    }
+    if (phone && phone !== distributor.phone) {
+      requestedChanges.phone = phone;
+      currentValues.phone = distributor.phone;
+    }
+    if (address && address !== distributor.address) {
+      requestedChanges.address = address;
+      currentValues.address = distributor.address;
+    }
+    if (licenseNumber && licenseNumber !== distributor.licenseNumber) {
+      requestedChanges.licenseNumber = licenseNumber;
+      currentValues.licenseNumber = distributor.licenseNumber;
     }
 
-    return NextResponse.json({ 
-      success: true, 
-      message: 'Profile updated successfully' 
+    if (Object.keys(requestedChanges).length === 0) {
+      return NextResponse.json({ error: 'No changes detected' }, { status: 400 });
+    }
+
+    await db.collection('distributorChangeRequests').insertOne({
+      distributorId: distributor._id.toString(),
+      distributorName: distributor.ownerName,
+      distributorEmail: distributor.email,
+      requestedChanges,
+      currentValues,
+      status: 'pending',
+      requestedAt: new Date(),
+    });
+
+    return NextResponse.json({
+      success: true,
+      message: 'Your changes have been submitted for admin review. They will be applied once approved.',
     });
   } catch (err) {
     console.error('Update distributor profile error:', err);

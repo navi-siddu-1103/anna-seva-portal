@@ -19,6 +19,7 @@ const PUBLIC_PATHS = [
   '/api/auth/forgot-password',
   '/api/auth/reset-password',
   '/api/config',
+  '/api/admin/seed',  // allow seeding without auth (one-time setup)
   '/find-fps',
 ];
 
@@ -38,7 +39,17 @@ export function middleware(req: NextRequest) {
   }
 
   try {
-    verifyToken(token);
+    const decoded = verifyToken(token) as Record<string, any>;
+
+    // Admin-only routes
+    if (pathname.startsWith('/admin') || pathname.startsWith('/api/admin')) {
+      if (decoded.role !== 'admin') {
+        const loginUrl = req.nextUrl.clone();
+        loginUrl.pathname = '/login';
+        return NextResponse.redirect(loginUrl);
+      }
+    }
+
     return NextResponse.next();
   } catch (err) {
     const loginUrl = req.nextUrl.clone();

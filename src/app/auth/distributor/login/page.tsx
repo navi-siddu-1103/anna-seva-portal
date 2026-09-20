@@ -30,12 +30,15 @@ export default function DistributorLoginPage() {
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Login failed');
-      
-      toast({ 
-        title: 'Welcome back!', 
-        description: 'Successfully logged in as Distributor' 
-      });
-      router.push('/distributor');
+
+      // Route based on role returned by server
+      if (data.role === 'admin') {
+        toast({ title: 'Welcome, Admin!', description: 'Redirecting to admin dashboard.' });
+        router.push('/admin');
+      } else {
+        toast({ title: 'Welcome back!', description: 'Successfully logged in as Distributor' });
+        router.push('/distributor');
+      }
     } catch (err: any) {
       toast({ 
         title: 'Login failed', 

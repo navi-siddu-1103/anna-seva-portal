@@ -6,7 +6,7 @@ import { useEffect, useState } from 'react';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Separator } from '@/components/ui/separator';
-import { User, Fingerprint, MapPin, Store, Phone, ArrowLeft, Loader2, Edit } from 'lucide-react';
+import { User, Fingerprint, MapPin, Store, Phone, ArrowLeft, Loader2, Edit, Clock, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useToast } from '@/hooks/use-toast';
 import ProfileEditForm from '@/components/distributor/profile-edit-form';
@@ -18,12 +18,19 @@ interface DistributorData {
   address: string;
   phone: string;
   email: string;
+  status?: string;
+}
+
+interface PendingChangeRequest {
+  requestedChanges: Record<string, string>;
+  requestedAt: string;
 }
 
 export default function DistributorProfilePage() {
     const router = useRouter();
     const { toast } = useToast();
     const [distributorData, setDistributorData] = useState<DistributorData | null>(null);
+    const [pendingChangeRequest, setPendingChangeRequest] = useState<PendingChangeRequest | null>(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isEditing, setIsEditing] = useState(false);
@@ -42,6 +49,7 @@ export default function DistributorProfilePage() {
                 const data = await response.json();
                 if (data.success) {
                     setDistributorData(data.data);
+                    setPendingChangeRequest(data.pendingChangeRequest ?? null);
                     setError(null);
                 } else {
                     throw new Error('Failed to fetch profile');
@@ -106,8 +114,9 @@ export default function DistributorProfilePage() {
                     <ProfileEditForm 
                         distributorData={distributorData}
                         onSave={(data) => {
-                            setDistributorData({ ...distributorData, ...data });
+                            // Changes are now sent as a change request — refresh profile to show pending banner
                             setIsEditing(false);
+                            window.location.reload();
                         }}
                         onCancel={() => setIsEditing(false)}
                     />
@@ -125,6 +134,34 @@ export default function DistributorProfilePage() {
                 </Button>
                 <h1 className="text-3xl font-bold font-headline">Your Profile</h1>
             </div>
+
+            {/* Pending change request banner */}
+            {pendingChangeRequest && (
+                <div className="max-w-2xl mx-auto mb-4 flex items-start gap-3 p-4 rounded-lg bg-orange-50 border border-orange-200 text-orange-800">
+                    <Clock className="w-5 h-5 shrink-0 mt-0.5" />
+                    <div>
+                        <p className="font-medium text-sm">Profile update pending admin review</p>
+                        <p className="text-xs mt-0.5 text-orange-700">
+                            Your changes have been submitted and will be applied once approved by the admin.
+                            Submitted on {new Date(pendingChangeRequest.requestedAt).toLocaleDateString('en-IN')}.
+                        </p>
+                    </div>
+                </div>
+            )}
+
+            {/* Account status banner for pending distributors */}
+            {distributorData?.status === 'pending' && (
+                <div className="max-w-2xl mx-auto mb-4 flex items-start gap-3 p-4 rounded-lg bg-yellow-50 border border-yellow-200 text-yellow-800">
+                    <AlertCircle className="w-5 h-5 shrink-0 mt-0.5" />
+                    <div>
+                        <p className="font-medium text-sm">Account pending approval</p>
+                        <p className="text-xs mt-0.5 text-yellow-700">
+                            Your shop is not yet visible to cardholders. Please wait for admin approval.
+                        </p>
+                    </div>
+                </div>
+            )}
+
             <Card className="max-w-2xl mx-auto">
                 <CardHeader>
                     <div className="flex items-center justify-between">
@@ -141,9 +178,11 @@ export default function DistributorProfilePage() {
                             variant="outline" 
                             onClick={() => setIsEditing(true)}
                             className="gap-2"
+                            disabled={!!pendingChangeRequest}
+                            title={pendingChangeRequest ? 'A change request is already pending review' : 'Edit profile'}
                         >
                             <Edit className="h-4 w-4" />
-                            Edit
+                            {pendingChangeRequest ? 'Changes Pending' : 'Edit'}
                         </Button>
                     </div>
                 </CardHeader>
@@ -172,3 +211,4 @@ function InfoItem({ icon: Icon, label, value }: { icon: React.ElementType, label
         </div>
     )
 }
+
