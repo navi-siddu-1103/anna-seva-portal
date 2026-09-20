@@ -92,7 +92,7 @@ export default function Header() {
                 <span>Profile</span>
               </DropdownMenuItem>
             </Link>
-            <Link href="/login">
+            <Link href="/api/auth/logout">
               <DropdownMenuItem>
                 <LogOut className="mr-2 h-4 w-4" />
                 <span>Log out</span>
