@@ -70,12 +70,18 @@ export default function DistributionCycleAnnouncement() {
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
             <Calendar className="h-4 w-4" />
-            Next Distribution Cycle
+            Distribution Cycle
           </CardTitle>
-          <CardDescription>Latest announcement</CardDescription>
         </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground">No distribution cycle announced yet</p>
+        <CardContent className="flex flex-col items-center justify-center py-6 text-center gap-2">
+          <div className="p-3 rounded-full bg-muted">
+            <Calendar className="h-5 w-5 text-muted-foreground" />
+          </div>
+          <p className="font-medium text-sm">Waiting for next cycle</p>
+          <p className="text-xs text-muted-foreground">
+            The previous distribution cycle has ended.<br />
+            Your distributor will announce the next one soon.
+          </p>
         </CardContent>
       </Card>
     );
