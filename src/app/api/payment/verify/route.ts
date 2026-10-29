@@ -33,9 +33,19 @@ export async function POST(request: Request) {
       );
     }
 
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keySecret) {
+      console.error('Razorpay verify error: server key is not configured');
+      return NextResponse.json(
+        { error: 'Razorpay is not configured on this server.' },
+        { status: 503 }
+      );
+    }
+
     // Verify the HMAC-SHA256 signature
     const generatedSignature = crypto
-      .createHmac('sha256', process.env.RAZORPAY_KEY_SECRET!)
+      .createHmac('sha256', keySecret)
       .update(`${razorpay_order_id}|${razorpay_payment_id}`)
       .digest('hex');
 

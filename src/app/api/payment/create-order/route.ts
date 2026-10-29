@@ -2,11 +2,6 @@ import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { verifyToken } from '@/lib/auth';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
-
 export async function POST(request: Request) {
   try {
     // Verify authentication
@@ -37,6 +32,22 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    const keyId = process.env.RAZORPAY_KEY_ID;
+    const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+    if (!keyId || !keySecret) {
+      console.error('Razorpay create-order error: server keys are not configured');
+      return NextResponse.json(
+        { error: 'Razorpay is not configured on this server.' },
+        { status: 503 }
+      );
+    }
+
+    const razorpay = new Razorpay({
+      key_id: keyId,
+      key_secret: keySecret,
+    });
 
     // Create Razorpay order (amount must be in paise)
     const order = await razorpay.orders.create({
