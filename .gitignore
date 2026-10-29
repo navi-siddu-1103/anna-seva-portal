@@ -39,6 +39,7 @@ next-env.d.ts
 
 .genkit/*
 .env*
+!.env.razorpay.example
 
 # firebase
 firebase-debug.log
