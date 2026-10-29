@@ -2,10 +2,21 @@ import { NextResponse } from 'next/server';
 import Razorpay from 'razorpay';
 import { verifyToken } from '@/lib/auth';
 
-const razorpay = new Razorpay({
-  key_id: process.env.RAZORPAY_KEY_ID!,
-  key_secret: process.env.RAZORPAY_KEY_SECRET!,
-});
+function getRazorpayClient() {
+  const keyId = process.env.RAZORPAY_KEY_ID;
+  const keySecret = process.env.RAZORPAY_KEY_SECRET;
+
+  if (!keyId || !keySecret) {
+    throw new Error(
+      'Razorpay is not configured. Set RAZORPAY_KEY_ID and RAZORPAY_KEY_SECRET.'
+    );
+  }
+
+  return new Razorpay({
+    key_id: keyId,
+    key_secret: keySecret,
+  });
+}
 
 export async function POST(request: Request) {
   try {
@@ -37,6 +48,8 @@ export async function POST(request: Request) {
         { status: 400 }
       );
     }
+
+    const razorpay = getRazorpayClient();
 
     // Create Razorpay order (amount must be in paise)
     const order = await razorpay.orders.create({
