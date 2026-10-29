@@ -29,9 +29,17 @@ export default function AdminCardholdersPage() {
     try {
       const res = await fetch('/api/admin/cardholders');
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error ?? 'Failed to fetch cardholders');
+      }
       setCardholders(data.cardholders ?? []);
-    } catch {
-      toast({ title: 'Error', description: 'Failed to fetch cardholders', variant: 'destructive' });
+    } catch (error) {
+      console.error('[admin cardholders]', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to fetch cardholders',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }

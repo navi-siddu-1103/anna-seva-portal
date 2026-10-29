@@ -16,12 +16,25 @@ interface Stats {
 export default function AdminDashboardPage() {
   const [stats, setStats] = useState<Stats | null>(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
     fetch('/api/admin/stats')
-      .then(r => r.json())
-      .then(d => setStats(d.stats))
-      .catch(console.error)
+      .then(async (response) => {
+        const data = await response.json();
+        if (!response.ok) {
+          throw new Error(data.error ?? 'Failed to load dashboard statistics');
+        }
+        return data;
+      })
+      .then(d => {
+        setStats(d.stats);
+        setError(null);
+      })
+      .catch((err: Error) => {
+        console.error('[admin dashboard]', err);
+        setError(err.message);
+      })
       .finally(() => setLoading(false));
   }, []);
 
@@ -74,6 +87,12 @@ export default function AdminDashboardPage() {
           <Loader2 className="w-5 h-5 animate-spin" />
           Loading stats...
         </div>
+      ) : error ? (
+        <Card className="mb-8 border-destructive/50">
+          <CardContent className="py-6 text-destructive">
+            Unable to load dashboard statistics: {error}
+          </CardContent>
+        </Card>
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
           {cards.map((card) => (

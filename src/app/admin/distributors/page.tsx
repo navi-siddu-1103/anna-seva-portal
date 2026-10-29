@@ -40,9 +40,17 @@ export default function AdminDistributorsPage() {
     try {
       const res = await fetch('/api/admin/distributors?status=all');
       const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.error ?? 'Failed to fetch distributors');
+      }
       setDistributors(data.distributors ?? []);
-    } catch {
-      toast({ title: 'Error', description: 'Failed to fetch distributors', variant: 'destructive' });
+    } catch (error) {
+      console.error('[admin distributors]', error);
+      toast({
+        title: 'Error',
+        description: error instanceof Error ? error.message : 'Failed to fetch distributors',
+        variant: 'destructive',
+      });
     } finally {
       setLoading(false);
     }
