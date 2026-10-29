@@ -1,0 +1,10 @@
+{
+  "placeholderImages": [
+    {
+      "id": "fps-map",
+      "description": "A map showing locations of Fair Price Shops.",
+      "imageUrl": "https://picsum.photos/seed/map1/1200/800",
+      "imageHint": "map city"
+    }
+  ]
+}
